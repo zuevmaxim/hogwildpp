@@ -44,7 +44,7 @@ struct Tuple {
  */
 template <>
 struct Tuple<2> {
-  int posn[]; //!< dubious way to keep consistency with Tupe<DIM>
+  int posn[0]; //!< dubious way to keep consistency with Tupe<DIM>
   int row, col;
   double rating;
 
