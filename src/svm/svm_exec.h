@@ -65,6 +65,7 @@ class SVMExec {
   }
   static double ModelObj(SVMTask &task, unsigned tid, unsigned total);
   static double ModelAccuracy(SVMTask &task, unsigned tid, unsigned total);
+  static double TotalModelAccuracy(SVMTask &task);
 };
 
 } // namespace svm

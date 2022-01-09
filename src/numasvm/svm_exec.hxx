@@ -253,6 +253,30 @@ double NumaSVMExec::ModelAccuracy(SVMTask &task, unsigned tid, unsigned total) {
   return correct;
 }
 
+double NumaSVMExec::TotalModelAccuracy(SVMTask &task) {
+  NumaSVMModel const &model = task.model[GetLatestModel(task, 0, 0)];
+
+  //SVMParams const &params = *task.params;
+  // Select the example vector array based on current node
+  vector::FVector<SVMExample> const & exampsvec = task.block[0].ex;
+
+  // calculate which chunk of examples we work on
+  size_t start = 0;
+  size_t end = exampsvec.size;
+
+  // keep const correctness
+  SVMExample const * const examps = exampsvec.values;
+  // return the number of examples we used and the sum of the loss
+  int correct = 0;
+  // compute the loss for each example
+  for (unsigned i = start; i < end; i++) {
+    int l = ComputeAccuracy(examps[i], model);
+    correct += l;
+  }
+  //counted = end-start;
+  return correct / (double) exampsvec.size;
+}
+
 double NumaSVMExec::ModelObj(SVMTask &task, unsigned tid, unsigned total) {
   int node = GetNumaNode();
   NumaSVMModel const &model = task.model[GetLatestModel(task, tid, total)];
