@@ -343,31 +343,31 @@ int main(int argc, char** argv) {
   for (size_t i = 0; i < nfeats; i++) {
     degs[i] = 0;
   }
-
-  NumaSVMModel * node_m;
-  int weights_count;
-  fp_type beta, lambda;
-  if (cluster_size <= 0) {
-    cluster_size = tpool.PhyCPUCount() / tpool.NodeCount();
-  }
-  weights_count = CreateNumaClusterRoundRobinRingSVMModel(node_m, nfeats, tpool, nthreads, cluster_size, update_delay);
-  beta = SolveBeta(weights_count / cluster_size);
-  lambda = 1 - pow(beta, weights_count / cluster_size - 1);
-
-  printf("weights_count=%d, beta=%f, lambda=%f\n", weights_count, beta, lambda);
-  PrintWeights(node_m, weights_count, nthreads, tpool);
-  SVMParams tp (step_size, step_decay, mu, beta, lambda, weights_count, true, update_delay, tolerance, &tpool);
   CountDegrees(node_train_examps[0], degs);
-  tp.degrees = degs;
-  tp.ndim = nfeats;
+
+  for (int iteration = 0; iteration < 100; ++iteration) {
+    NumaSVMModel* node_m;
+    int weights_count;
+    fp_type beta, lambda;
+    if (cluster_size <= 0) {
+        cluster_size = tpool.PhyCPUCount() / tpool.NodeCount();
+    }
+    weights_count = CreateNumaClusterRoundRobinRingSVMModel(node_m, nfeats, tpool, nthreads, cluster_size,update_delay);
+    beta = SolveBeta(weights_count / cluster_size);
+    lambda = 1 - pow(beta, weights_count / cluster_size - 1);
+
+    printf("weights_count=%d, beta=%f, lambda=%f\n", weights_count, beta, lambda);
+    PrintWeights(node_m, weights_count, nthreads, tpool);
+    SVMParams tp(step_size, step_decay, mu, beta, lambda, weights_count, true, update_delay, tolerance, &tpool);
+    tp.degrees = degs;
+    tp.ndim = nfeats;
 
 //  hogwild::freeforall::FeedTrainTest(memfeed.GetTrough(), nepochs, nthreads);
-  NumaMemoryScan<SVMExample> mscan(node_train_examps, nnodes);
-  Hogwild<NumaSVMModel, SVMParams, NumaSVMExec>  hw(node_m[0], tp, tpool);
-  NumaMemoryScan<SVMExample> tscan(node_test_examps, nnodes);
-
-  hw.RunExperiment(nepochs, wall_clock, mscan, tscan);
-  
+    NumaMemoryScan<SVMExample> mscan(node_train_examps, nnodes);
+    Hogwild<NumaSVMModel, SVMParams, NumaSVMExec> hw(node_m[0], tp, tpool);
+    NumaMemoryScan<SVMExample> tscan(node_test_examps, nnodes);
+    hw.RunExperiment(nepochs, wall_clock, mscan, tscan);
+  }
   return 0;
 }
 
