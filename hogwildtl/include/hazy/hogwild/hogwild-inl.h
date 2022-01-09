@@ -25,6 +25,29 @@
 // See for documentation
 #include "hazy/hogwild/hogwild.h"
 
+#include <functional>
+#include <chrono>
+#include <future>
+#include <cstdio>
+
+namespace {
+template<class Model, class Params, class Example>
+static double test(Model& model, Params& params, hazy::hogwild::ExampleBlock<Example> *block, double (*hook)(hazy::hogwild::HogwildTask<Model, Params, Example>&)) {
+  hazy::hogwild::HogwildTask<Model, Params, Example> task{&model, &params, block};
+  return hook(task);
+}
+
+void startRepeatedTask(int interval, const std::function<bool()>& func) {
+  std::thread([interval, func]() {
+    while (true) {
+      if (func()) return;
+        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+      }
+    }).detach();
+}
+
+}
+
 namespace hazy {
 namespace hogwild {
 
@@ -97,7 +120,21 @@ void Hogwild<Model, Params, Exec>::RunExperiment(
     int nepochs, hazy::util::Clock &wall_clock, 
     TrainScan &trscan, TestScan &tescan) {
   printf("wall_clock: %.5f    Going Hogwild!\n", wall_clock.Read());
-  for (int e = 1; e <= nepochs; e++) {
+  bool stop = false;
+  double time_s{};
+  double TARGET_ACC = 0.97713;
+  startRepeatedTask(10, [&]() mutable {
+    double test_acc = test(model_, params_, &tescan.NextWithoutShuffle(), Exec::TotalModelAccuracy);
+    bool result = test_acc >= TARGET_ACC;
+    if (result) {
+      time_s = epoch_time_.Read();
+      stop = true;
+    }
+    return result;
+  });
+  int e = 1;
+  for (; e < 100; e++) {
+    if (stop) break;
     UpdateModel(trscan);
     double train_rmse = ComputeRMSE(trscan);
     double test_rmse = ComputeRMSE(tescan);
@@ -112,9 +149,13 @@ void Hogwild<Model, Params, Exec>::RunExperiment(
            epoch_time_.value, train_rmse, test_rmse);
 */
    
-    printf("epoch: %d wall_clock: %.5f train_time: %.5f test_time: %.5f epoch_time: %.5f train_rmse: %.5g test_rmse: %.5g obj: %.9g train_acc: %.5g test_acc: %.5g\n", 
+    printf("epoch: %d wall_clock: %.5f train_time: %.5f test_time: %.5f epoch_time_total: %.5f train_rmse: %.5g test_rmse: %.5g obj: %.9g train_acc: %.5g test_acc: %.5g\n",
            e, wall_clock.Read(), train_time_.value, test_time_.value, 
            epoch_time_.value, train_rmse, test_rmse, obj, train_acc, test_acc);
+    fflush(stdout);
+  }
+  if (stop) {
+    printf("epoch: %d wall_clock: %.5f epoch_time: %.5f\n", e, wall_clock.Read(), time_s);
     fflush(stdout);
   }
 }
