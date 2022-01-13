@@ -44,11 +44,11 @@ sns.set(style='whitegrid')
 
 datasets = [
     # "covtype",
-    # "webspam",
+    "webspam",
     # "music",
-    "rcv1",
-    # "epsilon",
-    # "news20"
+    # "rcv1",
+    "epsilon",
+    "news20"
 ]
 
 
