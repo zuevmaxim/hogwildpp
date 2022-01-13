@@ -141,7 +141,7 @@ int main(int argc, char** argv) {
     LoadSVMExamples(scantest, test_examps);
   }
 
-    printf("Train dataset of size %d, features %d\nTest dataset of size %d\n", train_examps.size, nfeats, test_examps.size);
+  printf("Train dataset of size %d, features %d\nTest dataset of size %d\n", train_examps.size, nfeats, test_examps.size);
 
   unsigned *degs = new unsigned[nfeats];
   printf("Loaded %lu examples\n", nfeats);
@@ -151,20 +151,19 @@ int main(int argc, char** argv) {
   CountDegrees(train_examps, degs);
 
 //  hogwild::freeforall::FeedTrainTest(memfeed.GetTrough(), nepochs, nthreads);
-    for (int i = 0; i < 100; ++i) {
-        printf("Run experiment: threads=%d\n", nthreads);
-        SVMParams tp (step_size, step_decay, mu);
-        tp.degrees = degs;
-        tp.ndim = nfeats;
-        SVMModel m(nfeats);
-        hazy::thread::ThreadPool tpool(nthreads);
-        tpool.Init();
-        MemoryScan<SVMExample> mscan(train_examps);
-        Hogwild<SVMModel, SVMParams, SVMExec>  hw(m, tp, tpool);
-        MemoryScan<SVMExample> tscan(test_examps);
-
-        hw.RunExperiment(nepochs, wall_clock, mscan, tscan);
-    }
+  for (int i = 0; i < 100; ++i) {
+    SVMParams tp (step_size, step_decay, mu);
+    tp.degrees = degs;
+    tp.ndim = nfeats;
+    SVMModel m(nfeats);
+    hazy::thread::ThreadPool tpool(nthreads);
+    tpool.Init();
+    MemoryScan<SVMExample> mscan(train_examps);
+    Hogwild<SVMModel, SVMParams, SVMExec>  hw(m, tp, tpool);
+    MemoryScan<SVMExample> tscan(test_examps);
+    printf("Run experiment: threads=%d\n", nthreads);
+    hw.RunExperiment(nepochs, wall_clock, mscan, tscan);
+  }
 
   return 0;
 }

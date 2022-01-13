@@ -25,29 +25,6 @@
 // See for documentation
 #include "hazy/hogwild/hogwild.h"
 
-#include <functional>
-#include <chrono>
-#include <future>
-#include <cstdio>
-
-namespace {
-template<class Model, class Params, class Example>
-static double test(Model& model, Params& params, hazy::hogwild::ExampleBlock<Example> *block, double (*hook)(hazy::hogwild::HogwildTask<Model, Params, Example>&)) {
-  hazy::hogwild::HogwildTask<Model, Params, Example> task{&model, &params, block};
-  return hook(task);
-}
-
-void startRepeatedTask(int interval, const std::function<bool()>& func) {
-  std::thread([interval, func]() {
-    while (true) {
-      if (func()) return;
-        std::this_thread::sleep_for(std::chrono::milliseconds(interval));
-      }
-    }).detach();
-}
-
-}
-
 namespace hazy {
 namespace hogwild {
 
@@ -124,18 +101,7 @@ void Hogwild<Model, Params, Exec>::RunExperiment(
   double time_s{};
   int epoch{};
   double TARGET_ACC = 0.97713;
-//  startRepeatedTask(10, [&]() mutable {
-//    double test_acc = test(model_, params_, &tescan.NextWithoutShuffle(), Exec::TotalModelAccuracy);
-//    bool result = test_acc >= TARGET_ACC;
-//    if (result) {
-//      time_s = train_time_.Read();
-//      epoch = e;
-//      stop = true;
-//    }
-//    return result;
-//  });
-  for (int e = 1; e < nepochs; e++) {
-//    if (stop) break;
+  for (int e = 1; e <= nepochs; e++) {
     UpdateModel(trscan);
     double train_rmse = ComputeRMSE(trscan);
     double test_rmse = ComputeRMSE(tescan);

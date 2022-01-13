@@ -114,29 +114,6 @@ double SVMExec::TestModel(SVMTask &task, unsigned tid, unsigned total) {
   return loss;
 }
 
-double SVMExec::TotalModelAccuracy(SVMTask &task) {
-  SVMModel const &model = *task.model;
-
-  //SVMParams const &params = *task.params;
-  vector::FVector<SVMExample> const & exampsvec = task.block->ex;
-
-  // calculate which chunk of examples we work on
-  size_t start = 0;
-  size_t end = exampsvec.size;
-
-  // keep const correctness
-  SVMExample const * const examps = exampsvec.values;
-  int correct = 0;
-  // compute the loss for each example
-  for (unsigned i = start; i < end; i++) {
-    int l = ComputeAccuracy(examps[i], model);
-    correct += l;
-  }
-  // return the number of examples we used and the sum of the loss
-  //counted = end-start;
-  return correct / (double) exampsvec.size;
-}
-
 double SVMExec::ModelAccuracy(SVMTask &task, unsigned tid, unsigned total) {
   SVMModel const &model = *task.model;
 

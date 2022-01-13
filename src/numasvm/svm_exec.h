@@ -65,7 +65,6 @@ class NumaSVMExec {
   }
   static double ModelObj(SVMTask &task, unsigned tid, unsigned total);
   static double ModelAccuracy(SVMTask &task, unsigned tid, unsigned total);
-  static double TotalModelAccuracy(SVMTask &task);
  private:
   static int GetNumaNode();
   static int GetLatestModel(SVMTask &task, unsigned tid, unsigned total);

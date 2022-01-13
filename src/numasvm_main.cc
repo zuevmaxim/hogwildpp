@@ -346,7 +346,6 @@ int main(int argc, char** argv) {
   CountDegrees(node_train_examps[0], degs);
 
   for (int iteration = 0; iteration < 100; ++iteration) {
-    printf("Run experiment: threads=%d c=%d\n", nthreads, cluster_size);
     NumaSVMModel* node_m;
     int weights_count;
     fp_type beta, lambda;
@@ -367,6 +366,7 @@ int main(int argc, char** argv) {
     NumaMemoryScan<SVMExample> mscan(node_train_examps, nnodes);
     Hogwild<NumaSVMModel, SVMParams, NumaSVMExec> hw(node_m[0], tp, tpool);
     NumaMemoryScan<SVMExample> tscan(node_test_examps, nnodes);
+    printf("Run experiment: threads=%d c=%d\n", nthreads, cluster_size);
     hw.RunExperiment(nepochs, wall_clock, mscan, tscan);
   }
   return 0;

@@ -74,10 +74,6 @@ class MemoryScan {
     return blk_;
   }
 
-  ExampleBlock<Example>& NextWithoutShuffle() {
-    return blk_;
-  }
-
   /*! \brief Resets the scanner to the begining.
    */
   void Reset() { has_next_ = true; }

@@ -102,10 +102,6 @@ class NumaMemoryScan {
     return node_blk_[0];
   }
 
-  ExampleBlock<Example>& NextWithoutShuffle() {
-    return node_blk_[0];
-  }
-
   /*! \brief Resets the scanner to the begining.
    */
   void Reset() { 
