@@ -84,7 +84,7 @@ for d in dataset:
 				stepdecay_trials = stepdecay
 			for b in stepdecay_trials:
 				result_name = os.path.join(outputdir, "{}_{}_{}_{}.txt".format(d, n, s, b))
-				cmdline = "bin/svm --epoch {} --stepinitial {} --step_decay {} --split {} --target_accuracy {} data/{}_train.tsv data/{}_test.tsv | tee {}".format(epochs, s, b, n, target_accuracy[dataset], d, d, result_name)
+				cmdline = "bin/svm --epoch {} --stepinitial {} --step_decay {} --split {} --target_accuracy {} data/{}_train.tsv data/{}_test.tsv | tee {}".format(epochs, s, b, n, target_accuracy[d], d, d, result_name)
 				print "Executing HogWild! with {} threads:\n{}\nResults at {}".format(n, cmdline, result_name)
 				if not dryrun:
 						subprocess.Popen(cmdline, shell=True).wait()

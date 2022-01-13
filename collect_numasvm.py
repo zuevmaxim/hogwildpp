@@ -102,7 +102,7 @@ for d in dataset:
 				for b in stepdecay_trials:
 					effective_b = math.pow(b, (1.0/nweights))
 					result_name = os.path.join(outputdir, "{}_{}_{}_{}_{}.txt".format(d, n, c, s, b))
-					cmdline = "bin/numasvm --epoch {} --stepinitial {} --step_decay {} --update_delay {} --cluster_size {} --split {}  --target_accuracy {} data/{}_train.tsv data/{}_test.tsv | tee {}".format(effective_epochs, s, effective_b, u, c, n, target_accuracy[dataset], d, d, result_name)
+					cmdline = "bin/numasvm --epoch {} --stepinitial {} --step_decay {} --update_delay {} --cluster_size {} --split {}  --target_accuracy {} data/{}_train.tsv data/{}_test.tsv | tee {}".format(effective_epochs, s, effective_b, u, c, n, target_accuracy[d], d, d, result_name)
 					print "Executing HogWild++ with {} threads, c={}:\n{}\nResults at {}".format(n, c, cmdline, result_name)
 					if not dryrun:
 						subprocess.Popen(cmdline, shell=True).wait()
