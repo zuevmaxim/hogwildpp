@@ -151,12 +151,12 @@ void Hogwild<Model, Params, Exec>::RunExperiment(
 */
    
     printf("epoch: %d wall_clock: %.5f train_time!!!: %.5f test_time: %.5f epoch_time: %.5f train_rmse: %.5g test_rmse: %.5g obj: %.9g train_acc: %.5g test_acc: %.5g\n",
-           e, wall_clock.Read(), train_time_.value, test_time_.value, 
+           e, wall_clock.Read(), train_time_.value, test_time_.value,
            epoch_time_.value, train_rmse, test_rmse, obj, train_acc, test_acc);
     fflush(stdout);
 
     if (test_acc >= TARGET_ACC) {
-      time_s = train_time_.Read();
+      time_s = train_time_.value;
       epoch = e;
       stop = true;
       break;
