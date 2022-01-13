@@ -134,7 +134,7 @@ void Hogwild<Model, Params, Exec>::RunExperiment(
 //    }
 //    return result;
 //  });
-  for (int e = 1; e < 100; e++) {
+  for (int e = 1; e < nepochs; e++) {
 //    if (stop) break;
     UpdateModel(trscan);
     double train_rmse = ComputeRMSE(trscan);
