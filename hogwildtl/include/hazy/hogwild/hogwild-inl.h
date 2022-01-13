@@ -122,19 +122,20 @@ void Hogwild<Model, Params, Exec>::RunExperiment(
   printf("wall_clock: %.5f    Going Hogwild!\n", wall_clock.Read());
   bool stop = false;
   double time_s{};
+  int epoch{};
   double TARGET_ACC = 0.97713;
-  startRepeatedTask(10, [&]() mutable {
-    double test_acc = test(model_, params_, &tescan.NextWithoutShuffle(), Exec::TotalModelAccuracy);
-    bool result = test_acc >= TARGET_ACC;
-    if (result) {
-      time_s = epoch_time_.Read();
-      stop = true;
-    }
-    return result;
-  });
-  int e = 1;
-  for (; e < 100; e++) {
-    if (stop) break;
+//  startRepeatedTask(10, [&]() mutable {
+//    double test_acc = test(model_, params_, &tescan.NextWithoutShuffle(), Exec::TotalModelAccuracy);
+//    bool result = test_acc >= TARGET_ACC;
+//    if (result) {
+//      time_s = epoch_time_.Read();
+//      epoch = e;
+//      stop = true;
+//    }
+//    return result;
+//  });
+  for (int e = 1; e < 100; e++) {
+//    if (stop) break;
     UpdateModel(trscan);
     double train_rmse = ComputeRMSE(trscan);
     double test_rmse = ComputeRMSE(tescan);
@@ -153,9 +154,16 @@ void Hogwild<Model, Params, Exec>::RunExperiment(
            e, wall_clock.Read(), train_time_.value, test_time_.value, 
            epoch_time_.value, train_rmse, test_rmse, obj, train_acc, test_acc);
     fflush(stdout);
+
+    if (test_acc >= TARGET_ACC) {
+      time_s = epoch_time_.Read();
+      epoch = e;
+      stop = true;
+      break;
+    }
   }
   if (stop) {
-    printf("epoch: %d wall_clock: %.5f epoch_time: %.5f\n", e, wall_clock.Read(), time_s);
+    printf("epoch: %d wall_clock: %.5f epoch_time: %.5f\n", epoch, wall_clock.Read(), time_s);
     fflush(stdout);
   }
 }
