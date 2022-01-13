@@ -95,12 +95,11 @@ template <class Model, class Params, class Exec>
 template <class TrainScan, class TestScan>
 void Hogwild<Model, Params, Exec>::RunExperiment(
     int nepochs, hazy::util::Clock &wall_clock, 
-    TrainScan &trscan, TestScan &tescan) {
+    TrainScan &trscan, TestScan &tescan, double target_accuracy) {
   printf("wall_clock: %.5f    Going Hogwild!\n", wall_clock.Read());
   bool stop = false;
   double time_s{};
   int epoch{};
-  double TARGET_ACC = 0.97713;
   for (int e = 1; e <= nepochs; e++) {
     UpdateModel(trscan);
     double train_rmse = ComputeRMSE(trscan);
@@ -121,7 +120,7 @@ void Hogwild<Model, Params, Exec>::RunExperiment(
            epoch_time_.value, train_rmse, test_rmse, obj, train_acc, test_acc);
     fflush(stdout);
 
-    if (test_acc >= TARGET_ACC) {
+    if (test_acc >= target_accuracy) {
       time_s = train_time_.value;
       epoch = e;
       stop = true;

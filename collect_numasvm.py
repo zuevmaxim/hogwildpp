@@ -7,11 +7,11 @@ dryrun = False
 
 dataset = [
 	# "covtype",
-	# "webspam",
+	"webspam",
 	# "music",
-	"rcv1",
-	# "epsilon",
-	# "news20"
+	# "rcv1",
+	"epsilon",
+	"news20"
 ]
 # settings used for grid size search
 '''
@@ -37,6 +37,12 @@ maxstepsize = { "covtype" : 5e-03,
 		"epsilon" : 1e-01,
 		"news20"  : 5e-01,
 	      }
+target_accuracy = { "covtype" : 1,
+					"webspam" : 0.92854,
+					"rcv1"    : 0.97713,
+					"epsilon" : 0.8974,
+					"news20"  : 0.99925,
+					}
 stepdecay = []
 stepdecay_per_dataset = { "covtype" : [0.85],
 			  "webspam" : [0.8],
@@ -96,7 +102,7 @@ for d in dataset:
 				for b in stepdecay_trials:
 					effective_b = math.pow(b, (1.0/nweights))
 					result_name = os.path.join(outputdir, "{}_{}_{}_{}_{}.txt".format(d, n, c, s, b))
-					cmdline = "bin/numasvm --epoch {} --stepinitial {} --step_decay {} --update_delay {} --cluster_size {} --split {} data/{}_train.tsv data/{}_test.tsv | tee {}".format(effective_epochs, s, effective_b, u, c, n, d, d, result_name)
+					cmdline = "bin/numasvm --epoch {} --stepinitial {} --step_decay {} --update_delay {} --cluster_size {} --split {}  --target_accuracy {} data/{}_train.tsv data/{}_test.tsv | tee {}".format(effective_epochs, s, effective_b, u, c, n, target_accuracy[dataset], d, d, result_name)
 					print "Executing HogWild++ with {} threads, c={}:\n{}\nResults at {}".format(n, c, cmdline, result_name)
 					if not dryrun:
 						subprocess.Popen(cmdline, shell=True).wait()

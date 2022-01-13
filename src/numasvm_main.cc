@@ -235,6 +235,7 @@ int main(int argc, char** argv) {
   int cluster_size = 0;
   int update_delay = 256;
   double tolerance = 1e-2;
+  double target_accuracy = 1.0;
   static struct extended_option long_options[] = {
     {"mu", required_argument, NULL, 'u', "the maxnorm"},
     {"epochs"    ,required_argument, NULL, 'e', "number of epochs (default is 20)"},
@@ -248,6 +249,7 @@ int main(int argc, char** argv) {
     {"update_delay", required_argument, NULL, 't', "Number of iterations before pass the token to the next thread (default: 256)"},
     {"cluster_size", required_argument, NULL, 'c', "Cluster size (c). Threads in a cluster share the same weights (default: #CPU in one socket)"},
     {"tolerance", required_argument, NULL, 'o', "error tolerance when doing gradient update (default 1e-2)"},
+    {"target_accuracy", required_argument,NULL, 'a', "target accuracy to converge"},
     {NULL,0,NULL,0,0} 
   };
 
@@ -286,6 +288,9 @@ int main(int argc, char** argv) {
         break;
       case 'o':
         tolerance = atof(optarg);
+        break;
+      case 'a':
+        target_accuracy = atof(optarg);
         break;
       case ':':
       case '?':
@@ -372,7 +377,7 @@ int main(int argc, char** argv) {
     Hogwild<NumaSVMModel, SVMParams, NumaSVMExec> hw(node_m[0], tp, tpool);
     NumaMemoryScan<SVMExample> tscan(node_test_examps, nnodes);
     printf("Run experiment: threads=%d c=%d\n", nthreads, cluster_size);
-    hw.RunExperiment(nepochs, wall_clock, mscan, tscan);
+    hw.RunExperiment(nepochs, wall_clock, mscan, tscan, target_accuracy);
   }
   return 0;
 }

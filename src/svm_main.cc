@@ -52,6 +52,7 @@ int main(int argc, char** argv) {
   unsigned nepochs = 20;
   unsigned nthreads = 1;
   float mu = 1.0, step_size = 5e-2, step_decay = 0.8;
+  double target_accuracy = 1.0;
   static struct extended_option long_options[] = {
     {"mu", required_argument, NULL, 'u', "the maxnorm"},
     {"epochs"    ,required_argument, NULL, 'e', "number of epochs (default is 20)"},
@@ -62,6 +63,7 @@ int main(int argc, char** argv) {
     //{"shufflers", required_argument, NULL, 'q', "number of shufflers"},
     {"binary", required_argument,NULL, 'v', "load the file in a binary fashion"},
     {"matlab-tsv", required_argument,NULL, 'm', "load TSVs indexing from 1 instead of 0"},
+    {"target_accuracy", required_argument,NULL, 'a', "target accuracy to converge"},
     {NULL,0,NULL,0,0} 
   };
 
@@ -91,6 +93,9 @@ int main(int argc, char** argv) {
         break;
       case 'r':
         nthreads = atoi(optarg);
+        break;
+      case 'a':
+        target_accuracy = atof(optarg);
         break;
       case ':':
       case '?':
@@ -162,7 +167,7 @@ int main(int argc, char** argv) {
     Hogwild<SVMModel, SVMParams, SVMExec>  hw(m, tp, tpool);
     MemoryScan<SVMExample> tscan(test_examps);
     printf("Run experiment: threads=%d\n", nthreads);
-    hw.RunExperiment(nepochs, wall_clock, mscan, tscan);
+    hw.RunExperiment(nepochs, wall_clock, mscan, tscan, target_accuracy);
   }
 
   return 0;
