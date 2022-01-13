@@ -152,6 +152,7 @@ int main(int argc, char** argv) {
 
 //  hogwild::freeforall::FeedTrainTest(memfeed.GetTrough(), nepochs, nthreads);
     for (int i = 0; i < 100; ++i) {
+        printf("Run experiment: threads=%d\n", nthreads);
         SVMParams tp (step_size, step_decay, mu);
         tp.degrees = degs;
         tp.ndim = nfeats;

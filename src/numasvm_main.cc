@@ -346,6 +346,7 @@ int main(int argc, char** argv) {
   CountDegrees(node_train_examps[0], degs);
 
   for (int iteration = 0; iteration < 100; ++iteration) {
+    printf("Run experiment: threads=%d c=%d\n", nthreads, cluster_size);
     NumaSVMModel* node_m;
     int weights_count;
     fp_type beta, lambda;
