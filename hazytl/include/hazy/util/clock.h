@@ -17,7 +17,6 @@
 #define HAZY_UTIL_CLOCK_H
 
 #include "hazy/util/nsec_time.h"
-#include <mutex>
 
 namespace hazy {
 namespace util {
@@ -29,65 +28,51 @@ class Clock {
  public:
   double value; //< the elapsed time in seconds
 
-  Clock() : value(0), start(0), stop(0),  paused_(false), running(false) { }
+  Clock() : value(0), start(0), stop(0),  paused_(false) { } 
 
   /*! \brief Start counting.
    */
   inline void Start() {
-    mutex.lock();
     start = CurrentNSec();
     if (!paused_) {
       value = 0.0;
     }
-    running = true;
-    mutex.unlock();
   }
 
   /*! \brief Return the delta from the last call to Start()
    */
   inline double Read() {
-    mutex.lock();
-    double result;
-    if (!running) {
-      result = value;
+    if (paused_) {
+      return value;
     } else {
-      auto current = CurrentNSec();
-      result = value + (current - start) * 1e-9;
+      stop = CurrentNSec();
+      value = (double) (stop - start) * 1e-9;
+      return value;
     }
-    mutex.unlock();
-    return result;
   }
 
   /*! \brief Pause counting, keep a running sum of time
    */
   inline double Pause() {
-    mutex.lock();
     stop = CurrentNSec();
     value += (double) (stop - start) * 1e-9;
     paused_ = true;
-    running = false;
-    mutex.unlock();
     return value;
   }
 
   /*! \brief Stop counting, next call to Start() will reset the time
    */
   inline double Stop() {
-    mutex.lock();
     stop = CurrentNSec();
     value = (double) (stop - start) * 1e-9;
     paused_ = false;
-    running = false;
-    mutex.unlock();
     return value;
   }
 
  private:
-  volatile unsigned long long start;
-  volatile unsigned long long stop;
-  volatile bool paused_;
-  volatile bool running;
-  std::mutex mutex;
+  unsigned long long start;
+  unsigned long long stop;
+  bool paused_;
 };
 
 } // namespace util

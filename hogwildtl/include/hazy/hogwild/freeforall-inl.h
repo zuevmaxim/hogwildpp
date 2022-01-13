@@ -221,7 +221,7 @@ size_t FFAScan(Model &m, Params &p, Scan &scan,
     train_time.Start();
     epoch_time.Start();
     FreeForAll(task, tpool, hook, result);
-    epoch_time.Pause();
+    epoch_time.Stop();
     train_time.Pause();
   }
   return count;
