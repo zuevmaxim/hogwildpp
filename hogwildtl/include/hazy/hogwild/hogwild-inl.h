@@ -163,7 +163,7 @@ void Hogwild<Model, Params, Exec>::RunExperiment(
     }
   }
   if (stop) {
-    printf("threads: %d epoch: %d train_time: %.5f\n", tpool_.ThreadCount(), epoch, wall_clock.Read(), time_s);
+    printf("threads: %d epoch: %d train_time: %.5f\n", tpool_.ThreadCount(), epoch, time_s);
     fflush(stdout);
   }
 }
