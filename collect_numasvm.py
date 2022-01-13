@@ -5,7 +5,14 @@ from subprocess import check_call
 
 dryrun = False
 
-dataset = ["covtype", "webspam", "music", "rcv1", "epsilon", "news20"]
+dataset = [
+	# "covtype",
+	# "webspam",
+	# "music",
+	"rcv1",
+	# "epsilon",
+	# "news20"
+]
 # settings used for grid size search
 '''
 nthreads = [10]
@@ -21,16 +28,8 @@ stepdecay = [1, 0.95, 0.9, 0.85, 0.8]
 stepdecay_per_dataset = {}
 step_search_range = 10
 '''
-# settings used for collecting results
-cpu_count = multiprocessing.cpu_count() / 2
-if cpu_count <= 0:
-	cpu_count = 1
-# nthreads = [1, 2, 4, 8, 10, 15, 20, 30, 40]
-nthreads = [cpu_count]
-# cluster_size = [1, 2, 5, 10]
-cluster_size = [cpu_count / t for t in [1, 2, 4, 8, 16] if cpu_count / t > 0 and cpu_count % t == 0]
-cluster_size.append(1)
-cluster_size = sorted(list(set(cluster_size)))
+nthreads = [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64]
+cluster_size = [1, 2, 4, 8, 16]
 maxstepsize = { "covtype" : 5e-03,
 		"webspam" : 2e-01,
 		"music"   : 5e-08,
@@ -61,19 +60,7 @@ if not dryrun:
 	check_call("mkdir -p {}/".format(outputdir), shell=True)
 
 def GenerateSteps(max_step_size):
-	steps = []
-	step_size = max_step_size
-	steps.append(format(step_size, '1.0e'))
-	for i in range(0,step_search_range):
-		first_digit = int(format(step_size, 'e')[0]);
-		exp = math.floor(math.log10(step_size));
-		if first_digit == 1:
-			first_digit = 10
-			exp -= 1
-		first_digit /= 2
-		step_size = first_digit * math.pow(10, exp)
-		steps.append(format(step_size, '1.0e'))
-	return steps
+	return [max_step_size]
 
 def GenerateUpdateDelay(nweights):
 	if nweights <= 4:
@@ -96,7 +83,7 @@ for d in dataset:
 		for n in nthreads:
 			for c in cluster_size:
 				nweights = n / c
-				if nweights < 2 or (n % c) != 0:
+				if (n % c) != 0:
 					continue
 				effective_epochs = epochs * nweights
 				effective_epochs = min(1000, effective_epochs)
@@ -108,13 +95,11 @@ for d in dataset:
 					stepdecay_trials = stepdecay
 				for b in stepdecay_trials:
 					effective_b = math.pow(b, (1.0/nweights))
-					cmdline = "bin/numasvm --epoch {} --binary 1 --stepinitial {} --step_decay {} --update_delay {} --cluster_size {} --split {} data/{}_train.bin data/{}_test.bin".format(effective_epochs, s, effective_b, u, c, n, d, d)
 					result_name = os.path.join(outputdir, "{}_{}_{}_{}_{}.txt".format(d, n, c, s, b))
+					cmdline = "bin/numasvm --epoch {} --stepinitial {} --step_decay {} --update_delay {} --cluster_size {} --split {} data/{}_train.tsv data/{}_test.tsv | tee {}".format(effective_epochs, s, effective_b, u, c, n, d, d, result_name)
 					print "Executing HogWild++ with {} threads, c={}:\n{}\nResults at {}".format(n, c, cmdline, result_name)
 					if not dryrun:
-						result = subprocess.Popen(cmdline, shell=True, stdout=subprocess.PIPE).stdout.read()
-						with open(result_name, "w") as f:
-							f.write(result)
+						subprocess.Popen(cmdline, shell=True).wait()
 					else:
 						print "*** This is a dry run. No results will be produced. ***"
 	print

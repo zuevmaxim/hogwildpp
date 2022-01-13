@@ -5,7 +5,14 @@ from subprocess import check_call
 
 dryrun = False
 
-dataset = ["covtype", "webspam", "music", "rcv1", "epsilon", "news20"]
+dataset = [
+	# "covtype",
+	# "webspam",
+	# "music",
+	"rcv1",
+	# "epsilon",
+	# "news20"
+]
 # settings used for grid size search
 '''
 nthreads = [10]
@@ -22,11 +29,7 @@ stepdecay_per_dataset = {}
 step_search_range = 10
 '''
 # settings used for collecting results
-cpu_count = multiprocessing.cpu_count() / 2
-if cpu_count <= 0:
-	cpu_count = 1
-# nthreads = [1, 2, 4, 8, 10, 15, 20, 30, 40]
-nthreads = [cpu_count]
+nthreads = [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64]
 maxstepsize = { "covtype" : 5e-03,
 		"webspam" : 2e-01,
 		"music"   : 5e-08,
@@ -57,19 +60,7 @@ if not dryrun:
 	check_call("mkdir -p {}/".format(outputdir), shell=True)
 
 def GenerateSteps(max_step_size):
-	steps = []
-	step_size = max_step_size
-	steps.append(format(step_size, '1.0e'))
-	for i in range(0,step_search_range):
-		first_digit = int(format(step_size, 'e')[0]);
-		exp = math.floor(math.log10(step_size));
-		if first_digit == 1:
-			first_digit = 10
-			exp -= 1
-		first_digit /= 2
-		step_size = first_digit * math.pow(10, exp)
-		steps.append(format(step_size, '1.0e'))
-	return steps
+	return [max_step_size]
 
 for d in dataset:
 	# Find a step size from table
@@ -86,13 +77,11 @@ for d in dataset:
 			else:
 				stepdecay_trials = stepdecay
 			for b in stepdecay_trials:
-				cmdline = "bin/svm --epoch {} --binary 1 --stepinitial {} --step_decay {} --split {} data/{}_train.bin data/{}_test.bin".format(epochs, s, b, n, d, d)
 				result_name = os.path.join(outputdir, "{}_{}_{}_{}.txt".format(d, n, s, b))
+				cmdline = "bin/svm --epoch {} --stepinitial {} --step_decay {} --split {} data/{}_train.tsv data/{}_test.tsv | tee {}".format(epochs, s, b, n, d, d, result_name)
 				print "Executing HogWild! with {} threads:\n{}\nResults at {}".format(n, cmdline, result_name)
 				if not dryrun:
-						result = subprocess.Popen(cmdline, shell=True, stdout=subprocess.PIPE).stdout.read()
-						with open(result_name, "w") as f:
-							f.write(result)
+						subprocess.Popen(cmdline, shell=True).wait()
 				else:
 					print "*** This is a dry run. No results will be produced. ***"
 	print
