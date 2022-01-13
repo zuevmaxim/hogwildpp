@@ -345,7 +345,7 @@ int main(int argc, char** argv) {
   }
   CountDegrees(node_train_examps[0], degs);
 
-  for (int iteration = 0; iteration < 100; ++iteration) {
+  for (int iteration = 0; iteration < 25; ++iteration) {
     NumaSVMModel* node_m;
     int weights_count;
     fp_type beta, lambda;
