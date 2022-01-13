@@ -28,7 +28,7 @@ stepdecay = [1, 0.95, 0.9, 0.85, 0.8]
 stepdecay_per_dataset = {}
 step_search_range = 10
 '''
-nthreads = [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64]
+nthreads = [1, 2, 4, 8, 16, 32, 48, 64]
 cluster_size = [1, 2, 4, 8, 16]
 maxstepsize = { "covtype" : 5e-03,
 		"webspam" : 2e-01,

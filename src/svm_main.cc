@@ -151,7 +151,7 @@ int main(int argc, char** argv) {
   CountDegrees(train_examps, degs);
 
 //  hogwild::freeforall::FeedTrainTest(memfeed.GetTrough(), nepochs, nthreads);
-  for (int i = 0; i < 25; ++i) {
+  for (int i = 0; i < 50; ++i) {
     SVMParams tp (step_size, step_decay, mu);
     tp.degrees = degs;
     tp.ndim = nfeats;

@@ -29,7 +29,7 @@ stepdecay_per_dataset = {}
 step_search_range = 10
 '''
 # settings used for collecting results
-nthreads = [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64]
+nthreads = [1, 2, 4, 8, 16, 32, 48, 64]
 maxstepsize = { "covtype" : 5e-03,
 		"webspam" : 2e-01,
 		"music"   : 5e-08,
