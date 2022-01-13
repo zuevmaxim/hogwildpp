@@ -152,6 +152,11 @@ int CreateNumaClusterRoundRobinRingSVMModel(NumaSVMModel * &node_m, size_t nfeat
       next_weights[i] = -1;
     }
   }
+  if (cluster_count == 1) {
+    for (unsigned i = 0; i < nthreads; ++i) {
+      next_weights[i] = -1;
+    }
+  }
 
  /* Now create the Model array: per-cluster, ring 
   */
@@ -160,8 +165,8 @@ int CreateNumaClusterRoundRobinRingSVMModel(NumaSVMModel * &node_m, size_t nfeat
   int * atomic_ptr = new int ();
   int atomic_mask = (1 << (sizeof(int) * 8 - (weights_count - 1 ? __builtin_clz(weights_count - 1) : 32))) - 1;
   node_m = new NumaSVMModel[weights_count]; // some of them are just pointers to other weights
-  printf("Model array allocated at %p\n", node_m);
-  PrintNumaMemStats();
+//  printf("Model array allocated at %p\n", node_m);
+//  PrintNumaMemStats();
   for (int i = 0; i < weights_count; ++i) {
     int thread_id = (i % cluster_count) * cluster_size + (i / cluster_count);
     int node = tpool.GetThreadNodeAffinity(thread_id);
@@ -169,9 +174,9 @@ int CreateNumaClusterRoundRobinRingSVMModel(NumaSVMModel * &node_m, size_t nfeat
     numa_set_preferred(node);
     if (i / cluster_count == 0) {
       // only allocate memory for the first thread in each cluster
-      printf("Allocating memory for weight %d (thread %d) on node %d\n", i, thread_id, node);
+//      printf("Allocating memory for weight %d (thread %d) on node %d\n", i, thread_id, node);
       node_m[i].AllocateModel(nfeats);
-      PrintNumaMemStats();
+//      PrintNumaMemStats();
     }
     else {
       // this thread shares the model
