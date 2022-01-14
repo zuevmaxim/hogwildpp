@@ -5,12 +5,12 @@ from subprocess import check_call
 
 dryrun = False
 
-dataset = [
-	"covtype",
+datasets = [
+	# "covtype",
 	"webspam",
 	# "music",
-	# "rcv1",
-	"epsilon",
+	"rcv1",
+	# "epsilon",
 	"news20"
 ]
 # settings used for grid size search
@@ -38,7 +38,7 @@ maxstepsize = { "covtype" : 5e-03,
 		"news20"  : 5e-01,
 	      }
 target_accuracy = { "covtype" : 0.76291,
-					"webspam" : 0.92796,
+					"webspam" : 0.92700,
 					"rcv1"    : 0.97713,
 					"epsilon" : 0.89740,
 					"news20"  : 0.96425,

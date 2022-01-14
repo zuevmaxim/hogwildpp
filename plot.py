@@ -43,11 +43,11 @@ numafiles = [f for f in listdir(numapath) if isfile(join(numapath, f))]
 sns.set(style='whitegrid')
 
 datasets = [
-    "covtype",
+    # "covtype",
     "webspam",
     # "music",
-    # "rcv1",
-    "epsilon",
+    "rcv1",
+    # "epsilon",
     "news20"
 ]
 
