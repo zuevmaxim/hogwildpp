@@ -43,7 +43,7 @@ numafiles = [f for f in listdir(numapath) if isfile(join(numapath, f))]
 sns.set(style='whitegrid')
 
 datasets = [
-    # "covtype",
+    "covtype",
     "webspam",
     # "music",
     # "rcv1",
@@ -119,13 +119,13 @@ for dataset in datasets:
 
     types["hogwild"] = {}
     for f in files:
-        res = re.search('%s_([0-9]+)_0.5_0.8.txt' % dataset, f)
+        res = re.search('%s_([0-9]+)_[0-9\.]+_[0-9\.]+.txt' % dataset, f)
         if res:
             threads = int(res.group(1))
             types["hogwild"][threads] = extract_time(join(path, f))
 
     for f in numafiles:
-        res = re.search('%s_([0-9]+)_([0-9]+)_0.5_0.8.txt' % dataset, f)
+        res = re.search('%s_([0-9]+)_([0-9]+)_[0-9\.]+_[0-9\.]+.txt' % dataset, f)
         if res:
             threads = int(res.group(1))
             c = int(res.group(2))
@@ -153,13 +153,13 @@ for dataset in datasets:
 
     types["hogwild"] = {}
     for f in files:
-        res = re.search('%s_([0-9]+)_0.5_0.8.txt' % dataset, f)
+        res = re.search('%s_([0-9]+)_[0-9\.]+_[0-9\.]+.txt' % dataset, f)
         if res:
             threads = int(res.group(1))
             types["hogwild"][threads] = extract_epoch_time(join(path, f))
 
     for f in numafiles:
-        res = re.search('%s_([0-9]+)_([0-9]+)_0.5_0.8.txt' % dataset, f)
+        res = re.search('%s_([0-9]+)_([0-9]+)_[0-9\.]+_[0-9\.]+.txt' % dataset, f)
         if res:
             threads = int(res.group(1))
             c = int(res.group(2))

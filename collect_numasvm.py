@@ -6,7 +6,7 @@ from subprocess import check_call
 dryrun = False
 
 dataset = [
-	# "covtype",
+	"covtype",
 	"webspam",
 	# "music",
 	# "rcv1",
@@ -37,11 +37,11 @@ maxstepsize = { "covtype" : 5e-03,
 		"epsilon" : 1e-01,
 		"news20"  : 5e-01,
 	      }
-target_accuracy = { "covtype" : 1,
-					"webspam" : 0.92854,
+target_accuracy = { "covtype" : 0.76291,
+					"webspam" : 0.92796,
 					"rcv1"    : 0.97713,
-					"epsilon" : 0.8974,
-					"news20"  : 0.99925,
+					"epsilon" : 0.89740,
+					"news20"  : 0.96425,
 					}
 stepdecay = []
 stepdecay_per_dataset = { "covtype" : [0.85],
