@@ -40,7 +40,7 @@ size_t LoadSVMExamples(Scan &scan, vector::FVector<SVMExample> &ex) {
     }
 
     if (e.col < 0) {
-      rating = e.rating;
+      rating = (e.rating == 1.0) ? 1.0 : -1.0;
     } else {
       if (e.col > max_col) {
         max_col = e.col;
