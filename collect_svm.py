@@ -68,7 +68,7 @@ if not dryrun:
 def GenerateSteps(max_step_size):
 	return [max_step_size]
 
-for d in dataset:
+for d in datasets:
 	# Find a step size from table
 	steps = GenerateSteps(maxstepsize[d])
 	if d in iterations:

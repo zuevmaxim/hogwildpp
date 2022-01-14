@@ -77,7 +77,7 @@ def GenerateUpdateDelay(nweights):
 		update_delay = 4
 	return update_delay
 
-for d in dataset:
+for d in datasets:
 	# Find a step size from table
 	steps = GenerateSteps(maxstepsize[d])
 	if d in iterations:
