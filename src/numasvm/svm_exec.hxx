@@ -91,11 +91,11 @@ int inline ModelUpdate(const SVMExample &examp, const SVMParams &params,
     fp_type tolerance = params.tolerance;
     for (unsigned i = 0; i < w.size; ++i) {
       fp_type wi = vals[i];
+      fp_type old_wi = old_vals[i];
       fp_type delta = (wi - old_vals[i]) * params.step_size;
       fp_type next = next_vals[i];
-      fp_type new_wi;
       if (fabs(delta) > tolerance) {
-        fp_type new_wi = next * lambda + wi * (1 - lambda) + (beta + lambda - 1) * delta;
+        fp_type new_wi = next * lambda + old_wi * (1 - lambda) + beta * delta;
         next_vals[i] = next + beta * delta;
         vals[i] = new_wi;
         old_vals[i] = new_wi;
@@ -105,7 +105,7 @@ int inline ModelUpdate(const SVMExample &examp, const SVMParams &params,
       else {
         // if the delta is very small, will not update the model of next cluster
         // this delta will be accumulated
-        new_wi = next * lambda + wi * (1 - lambda) + lambda * delta;
+        fp_type new_wi = next * lambda + wi * (1 - lambda) + lambda * delta;
         vals[i] = new_wi;
         old_vals[i] = new_wi - delta;
       }
