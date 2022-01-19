@@ -6,6 +6,17 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 
+dpi = 300
+
+datasets = [
+    # "covtype",
+    # "webspam",
+    # "music",
+    "rcv1",
+    # "epsilon",
+    # "news20"
+]
+
 
 def extract_epoch_time(f):
     with open(f, "r") as file:
@@ -42,15 +53,6 @@ files = [f for f in listdir(path) if isfile(join(path, f))]
 numafiles = [f for f in listdir(numapath) if isfile(join(numapath, f))]
 sns.set(style='whitegrid')
 
-datasets = [
-    # "covtype",
-    "webspam",
-    # "music",
-    "rcv1",
-    # "epsilon",
-    "news20"
-]
-
 
 def plot_time(types, dataset, plot_name):
     fig, ax = plt.subplots()
@@ -68,11 +70,13 @@ def plot_time(types, dataset, plot_name):
     plt.title("%s Time, %s" % (plot_name, dataset))
     plt.xlabel("Threads")
     plt.ylabel("Time, s")
-    fig.savefig('%s_%s_time.png' % (dataset, plot_name), dpi=1200)
+    fig.tight_layout()
+    fig.savefig('%s_%s_time.png' % (dataset, plot_name), dpi=dpi)
 
 
 def plot_iterations(types, dataset, plot_name):
     fig, ax = plt.subplots()
+    min_y, max_y = int(1e9), 0
     for name, threads in sorted(types.items()):
         xs = []
         ys = []
@@ -81,15 +85,18 @@ def plot_iterations(types, dataset, plot_name):
             for i in iterations:
                 xs.append(t)
                 ys.append(i)
+        min_y = min(min_y, min(ys))
+        max_y = max(max_y, max(ys))
         sns.lineplot(np.log2(xs), np.log2(ys), label=name, marker="o", ci=95)
         if name == "hogwild":
             plt.xticks(np.log2(xs), xs)
-    tiks = [2 ** i for i in range(7)]
+    tiks = [2 ** i for i in range(int(np.floor(np.log2(min_y))), int(np.ceil(np.log2(max_y))))]
     plt.yticks(np.log2(tiks), tiks)
     plt.title("Iterations to converge, %s" % dataset)
     plt.xlabel("Threads")
     plt.ylabel("Iterations")
-    fig.savefig('%s_%s_iterations.png' % (dataset, plot_name), dpi=1200)
+    fig.tight_layout()
+    fig.savefig('%s_%s_iterations.png' % (dataset, plot_name), dpi=dpi)
 
 
 def plot_speedup(types, dataset, plot_name):
@@ -110,8 +117,8 @@ def plot_speedup(types, dataset, plot_name):
     plt.title("%s Speed-up, %s" % (plot_name, dataset))
     plt.xlabel("Threads")
     plt.ylabel("Speed-up")
-    plt.show()
-    fig.savefig('%s_%s_speed-up.png' % (dataset, plot_name), dpi=1200)
+    fig.tight_layout()
+    fig.savefig('%s_%s_speed-up.png' % (dataset, plot_name), dpi=dpi)
 
 
 for dataset in datasets:
