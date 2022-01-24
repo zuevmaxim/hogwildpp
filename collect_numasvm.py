@@ -86,10 +86,10 @@ for d in datasets:
 		epochs = iterations["default"]
 	print "For dataset {} we will use {} epochs and step size:\n {}\n".format(d, epochs, steps)
 	for s in steps:
-		for n in nthreads:
+		for n in nthreads[::-1]:
 			for c in cluster_size:
 				nweights = n / c
-				if (n % c) != 0:
+				if (n % c) != 0 or nweights < 2:
 					continue
 				effective_epochs = epochs * nweights
 				effective_epochs = min(1000, effective_epochs)
