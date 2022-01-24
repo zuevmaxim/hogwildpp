@@ -96,8 +96,8 @@ int inline ModelUpdate(const SVMExample &examp, const SVMParams &params,
       fp_type next = next_vals[i];
       if (fabs(delta) > tolerance) {
         fp_type new_wi = next * lambda + old_wi * (1 - lambda) + beta * delta;
-        next_vals[i] = next + beta * delta;
-        vals[i] = new_wi;
+        next_vals[i] += beta * delta;
+        vals[i] += new_wi - wi;
         old_vals[i] = new_wi;
         // count how many times we write dw (for debuging only)
         sync_counter++;
@@ -105,8 +105,8 @@ int inline ModelUpdate(const SVMExample &examp, const SVMParams &params,
       else {
         // if the delta is very small, will not update the model of next cluster
         // this delta will be accumulated
-        fp_type new_wi = next * lambda + wi * (1 - lambda) + lambda * delta;
-        vals[i] = new_wi;
+        fp_type new_wi = next * lambda + old_wi * (1 - lambda) + delta;
+        vals[i] += new_wi - wi;
         old_vals[i] = new_wi - delta;
       }
     }
