@@ -95,14 +95,15 @@ fp_type SolveBeta(int n) {
   if (n >= 2) {
     do {
       mid = (start + end) / 2;
-      err = pow(mid, n) + mid - 1;
+      fp_type p = pow(mid, n);
+      err =  mid + p - 1;
       if (err > 0) {
 	end = mid; 
       }
       else {
 	start = mid;
       }
-    } while(fabs(err) > 0.001);
+    } while(err > 0 || fabs(err) > 0.0001);
   }
   if (!n)
     mid = .0; 
