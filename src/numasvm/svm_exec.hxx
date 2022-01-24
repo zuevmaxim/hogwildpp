@@ -150,7 +150,7 @@ double NumaSVMExec::UpdateModel(SVMTask &task, unsigned tid, unsigned total) {
   // Select the example vector array based on current node
   vector::FVector<SVMExample> const & exampsvec = task.block[node].ex;
   // calculate which chunk of examples we work on
-  size_t start = hogwild::GetStartIndex(exampsvec.size, tid, total); 
+  size_t start = hogwild::GetStartIndex(exampsvec.size, tid, total);
   size_t end = hogwild::GetEndIndex(exampsvec.size, tid, total);
   // optimize for const pointers 
   // Seclect the pointers based on current node
