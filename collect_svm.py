@@ -7,11 +7,11 @@ dryrun = False
 
 datasets = [
 	# "covtype",
-	"webspam",
+	# "webspam",
 	# "music",
 	"rcv1",
 	# "epsilon",
-	"news20"
+	# "news20"
 ]
 # settings used for grid size search
 '''
