@@ -88,7 +88,7 @@ size_t NumaLoadSVMExamples(Scan &scan, vector::FVector<SVMExample> * nodeex, uns
 }
 
 fp_type SolveBeta(int n) {
-  fp_type start = 0.6;
+  fp_type start = 0.0;
   fp_type end = 1.0;
   fp_type mid = 0.5;
   fp_type err = 0;
@@ -356,7 +356,7 @@ int main(int argc, char** argv) {
   }
   CountDegrees(node_train_examps[0], degs);
 
-  for (int iteration = 0; iteration < 50; ++iteration) {
+  for (int iteration = 0; iteration < 100; ++iteration) {
     NumaSVMModel* node_m;
     int weights_count;
     fp_type beta, lambda;
