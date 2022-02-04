@@ -86,29 +86,29 @@ int inline ModelUpdate(const SVMExample &examp, const SVMParams &params,
     fp_type * const next_vals = next_model->weights.values;
     // fp_type * const next_old_vals = next_model->old_weights.values;
     fp_type beta = params.beta;
-    fp_type lambda = params.lambda; 
+    fp_type lambda = 0.5;
     // if the delta of a model parameter is smaller than tolerance, we will not update it
     fp_type tolerance = params.tolerance;
     for (unsigned i = 0; i < w.size; ++i) {
       fp_type wi = vals[i];
-      fp_type old_wi = old_vals[i];
-      fp_type delta = (wi - old_vals[i]) * params.step_size;
+//       fp_type old_wi = old_vals[i];
+//       fp_type delta = (wi - old_vals[i]) * params.step_size;
       fp_type next = next_vals[i];
-      if (fabs(delta) > tolerance) {
-        fp_type new_wi = next * lambda + old_wi * (1 - lambda) + beta * delta;
-        next_vals[i] += beta * delta;
+//       if (fabs(delta) > tolerance) {
+        fp_type new_wi = next * lambda + wi * (1 - lambda); //+ beta * delta;
+        next_vals[i] += new_wi - next;
         vals[i] += new_wi - wi;
-        old_vals[i] = new_wi;
+//         old_vals[i] = new_wi;
         // count how many times we write dw (for debuging only)
         sync_counter++;
-      }
-      else {
+//       }
+//       else {
         // if the delta is very small, will not update the model of next cluster
         // this delta will be accumulated
-        fp_type new_wi = next * lambda + old_wi * (1 - lambda) + delta;
-        vals[i] += new_wi - wi;
-        old_vals[i] = new_wi - delta;
-      }
+//         fp_type new_wi = next * lambda + old_wi * (1 - lambda) + delta;
+//         vals[i] += new_wi - wi;
+//         old_vals[i] = new_wi - delta;
+//       }
     }
     // printf("%d/%d(@%d):%d/%ld\n", tid, weights_index, iter, sync_counter, w.size);
   }
