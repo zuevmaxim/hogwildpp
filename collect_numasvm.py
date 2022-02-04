@@ -87,7 +87,7 @@ for d in datasets:
 	print "For dataset {} we will use {} epochs and step size:\n {}\n".format(d, epochs, steps)
 	for s in steps:
 		for n in nthreads[::-1]:
-			for c in cluster_size:
+			for c in cluster_size[::-1]:
 				nweights = n / c
 				if (n % c) != 0 or nweights < 2:
 					continue
