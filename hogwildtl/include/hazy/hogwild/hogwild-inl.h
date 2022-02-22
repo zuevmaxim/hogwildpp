@@ -93,7 +93,7 @@ double Hogwild<Model, Params, Exec>::ComputeAccuracy(Scan &scan) {
 
 template <class Model, class Params, class Exec>
 template <class TrainScan, class TestScan>
-void Hogwild<Model, Params, Exec>::RunExperiment(
+bool Hogwild<Model, Params, Exec>::RunExperiment(
     int nepochs, hazy::util::Clock &wall_clock, 
     TrainScan &trscan, TestScan &tescan, double target_accuracy) {
   printf("wall_clock: %.5f    Going Hogwild!\n", wall_clock.Read());
@@ -131,6 +131,7 @@ void Hogwild<Model, Params, Exec>::RunExperiment(
     printf("threads: %d epoch: %d train_time: %.5f\n", tpool_.ThreadCount(), epoch, time_s);
     fflush(stdout);
   }
+  return stop;
 }
 
 template <class Model, class Params, class Exec>

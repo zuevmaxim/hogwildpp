@@ -378,7 +378,11 @@ int main(int argc, char** argv) {
     Hogwild<NumaSVMModel, SVMParams, NumaSVMExec> hw(node_m[0], tp, tpool);
     NumaMemoryScan<SVMExample> tscan(node_test_examps, nnodes);
     printf("Run experiment: threads=%d c=%d\n", nthreads, cluster_size);
-    hw.RunExperiment(nepochs, wall_clock, mscan, tscan, target_accuracy);
+    bool stopped = hw.RunExperiment(nepochs, wall_clock, mscan, tscan, target_accuracy);
+    if (!stopped) {
+      printf("Stop the experiment as SGD did not converge\n");
+      break;
+    }
   }
   return 0;
 }

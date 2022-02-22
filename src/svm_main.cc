@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
     LoadSVMExamples(scantest, test_examps);
   }
 
-  printf("Train dataset of size %d, features %d\nTest dataset of size %d\n", train_examps.size, nfeats, test_examps.size);
+//   printf("Train dataset of size %d, features %d\nTest dataset of size %d\n", train_examps.size, nfeats, test_examps.size);
 
   unsigned *degs = new unsigned[nfeats];
   printf("Loaded %lu examples\n", nfeats);

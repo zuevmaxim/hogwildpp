@@ -70,7 +70,7 @@ class Hogwild {
    * \param tescan the test eample scanner
    */
   template <class TrainScan, class TestScan>
-  void RunExperiment(int nepochs, hazy::util::Clock &wall_clock, 
+  bool RunExperiment(int nepochs, hazy::util::Clock &wall_clock,
                      TrainScan &trscan, TestScan &tescan, double target_accuracy = 1.0);
  
   /*! \brief Runs an experiment printing statistics
