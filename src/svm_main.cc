@@ -167,7 +167,9 @@ int main(int argc, char** argv) {
     Hogwild<SVMModel, SVMParams, SVMExec>  hw(m, tp, tpool);
     MemoryScan<SVMExample> tscan(test_examps);
     printf("Run experiment: threads=%d\n", nthreads);
-    hw.RunExperiment(nepochs, wall_clock, mscan, tscan, target_accuracy);
+    if (!hw.RunExperiment(nepochs, wall_clock, mscan, tscan, target_accuracy)) {
+      break;
+    }
   }
 
   return 0;
