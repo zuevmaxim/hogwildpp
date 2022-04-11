@@ -7,11 +7,11 @@ dryrun = False
 
 datasets = [
 	# "covtype",
-	# "webspam",
+	"webspam",
 	# "music",
 	"rcv1",
-	# "epsilon",
-	# "news20"
+	"epsilon",
+	"news20"
 ]
 # settings used for grid size search
 '''
@@ -29,7 +29,7 @@ stepdecay_per_dataset = {}
 step_search_range = 10
 '''
 nthreads = [1, 2, 4, 8, 16, 32, 48, 64]
-cluster_size = [1, 2, 4, 8, 16]
+cluster_size = [16]
 maxstepsize = { "covtype" : 5e-03,
 		"webspam" : 2e-01,
 		"music"   : 5e-08,
@@ -84,12 +84,12 @@ for d in datasets:
 		epochs = iterations[d]
 	else:
 		epochs = iterations["default"]
-	print "For dataset {} we will use {} epochs and step size:\n {}\n".format(d, epochs, steps)
+	print("For dataset {} we will use {} epochs and step size:\n {}\n".format(d, epochs, steps))
 	for s in steps:
 		for n in nthreads[::-1]:
 			for c in cluster_size[::-1]:
 				nweights = n / c
-				if (n % c) != 0 or nweights < 2:
+				if (n % c) != 0:
 					continue
 				effective_epochs = epochs * nweights
 				effective_epochs = min(1000, effective_epochs)
@@ -100,15 +100,15 @@ for d in datasets:
 				else:
 					stepdecay_trials = stepdecay
 				for b in stepdecay_trials:
-					effective_b = math.pow(b, (1.0/nweights))
+					effective_b = math.pow(b, (1.0 / nweights))
 					result_name = os.path.join(outputdir, "{}_{}_{}_{}_{}.txt".format(d, n, c, s, b))
 					cmdline = "bin/numasvm --epoch {} --stepinitial {} --step_decay {} --update_delay {} --cluster_size {} --split {}  --target_accuracy {} data/{}_train.tsv data/{}_test.tsv | tee {}".format(effective_epochs, s, effective_b, u, c, n, target_accuracy[d], d, d, result_name)
-					print "Executing HogWild++ with {} threads, c={}:\n{}\nResults at {}".format(n, c, cmdline, result_name)
+					print("Executing HogWild++ with {} threads, c={}:\n{}\nResults at {}".format(n, c, cmdline, result_name))
 					if not dryrun:
 						subprocess.Popen(cmdline, shell=True).wait()
 					else:
-						print "*** This is a dry run. No results will be produced. ***"
-	print
+						print("*** This is a dry run. No results will be produced. ***")
+	print()
 
 
 

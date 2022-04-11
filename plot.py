@@ -5,6 +5,7 @@ import sys
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 dpi = 300
 nthreads = [1, 2, 4, 8, 16, 32, 48, 64]
@@ -48,9 +49,9 @@ def extract_time(f):
 
 
 path = sys.argv[1]
-numapath = ""  # sys.argv[2]
+numapath = sys.argv[2]
 files = [f for f in listdir(path) if isfile(join(path, f))]
-numafiles = []  # [f for f in listdir(numapath) if isfile(join(numapath, f))]
+numafiles = [f for f in listdir(numapath) if isfile(join(numapath, f))]
 sns.set(style='whitegrid')
 
 
@@ -81,6 +82,23 @@ def plot_speedup(types, dataset, plot_name, index, log_y):
     fig.savefig('%s_%s_factor.png' % (dataset, plot_name), dpi=dpi)
 
 
+def plot_count(types, dataset):
+    count = []
+    for name, threads in types.items():
+        for t, results in threads.items():
+            times, _, _ = results
+            count.append((name, t, len(times)))
+    df = pd.DataFrame(count, columns=["name", "threads", "count"])
+    fig, ax = plt.subplots()
+    sns.barplot(x="threads", y="count", hue="name", data=df)
+    plt.legend(loc="lower left")
+    plt.title("Convergence percent, %s" % dataset)
+    plt.xlabel("Threads")
+    plt.ylabel("Convergence percent")
+    fig.tight_layout()
+    fig.savefig('%s_Convergence_percent.png' % dataset, dpi=dpi)
+
+
 for dataset in datasets:
     types = {"hogwild": {}}
 
@@ -104,9 +122,9 @@ for dataset in datasets:
                 types[name] = {}
             times, epochs = extract_time(join(numapath, f))
             iteration_times, _ = extract_epoch_time(join(numapath, f))
-            if len(times) < 90:
-                continue
             types[name][threads] = times, epochs, iteration_times
+
+    plot_count(types, dataset)
 
     basic_time = np.mean(types["hogwild"][1][0])
     basic_epoch = np.mean(types["hogwild"][1][1])
