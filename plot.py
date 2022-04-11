@@ -10,7 +10,7 @@ import pandas as pd
 dpi = 300
 nthreads = [1, 2, 4, 8, 16, 32, 48, 64]
 datasets = [
-    "covtype",
+    # "covtype",
     "webspam",
     # "music",
     "rcv1",
