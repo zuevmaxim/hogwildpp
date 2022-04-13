@@ -368,7 +368,7 @@ int main(int argc, char** argv) {
     lambda = 1 - pow(beta, weights_count / cluster_size - 1);
 
     printf("weights_count=%d, beta=%f, lambda=%f\n", weights_count, beta, lambda);
-    PrintWeights(node_m, weights_count, nthreads, tpool);
+//    PrintWeights(node_m, weights_count, nthreads, tpool);
     SVMParams tp(step_size, step_decay, mu, beta, lambda, weights_count, true, update_delay, tolerance, &tpool);
     tp.degrees = degs;
     tp.ndim = nfeats;
