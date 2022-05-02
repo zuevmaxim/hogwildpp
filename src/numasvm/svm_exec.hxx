@@ -83,7 +83,7 @@ int inline ModelUpdate(const SVMExample &examp, const SVMParams &params,
     // when allow_update_w is false, update_atomic_counter is the token passing delay \tau_0 
     update_atomic_counter = params.update_delay;
     fp_type * const next_vals = next_model->weights.values;
-    fp_type beta = params.beta;
+//    fp_type beta = params.beta;
     fp_type lambda = 0.5;
     // if the delta of a model parameter is smaller than tolerance, we will not update it
     fp_type tolerance = params.tolerance;
@@ -91,9 +91,11 @@ int inline ModelUpdate(const SVMExample &examp, const SVMParams &params,
       fp_type wi = vals[i];
       fp_type next = next_vals[i];
       fp_type new_wi = next * lambda + wi * (1 - lambda);
-      next_vals[i] += new_wi - next;
       vals[i] += new_wi - wi;
-      sync_counter++;
+      if (fabs(new_wi - next) >= tolerance) {
+          next_vals[i] += new_wi - next;
+      }
+//      sync_counter++;
     }
     // printf("%d/%d(@%d):%d/%ld\n", tid, weights_index, iter, sync_counter, w.size);
   }
