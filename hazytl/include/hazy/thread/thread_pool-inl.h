@@ -171,7 +171,7 @@ void ThreadPool::ConfigThreadAffinity() {
     thread_node_mapping_[i] = node_id;
     last_used_node_ = std::max(last_used_node_, (unsigned)node_id);
     thread_phycore_mapping_[i] = phycore_id;
-    printf("Thread %d mapped to core %d (phycore %d) on node %d\n", i, core_id, phycore_id, node_id);
+//    printf("Thread %d mapped to core %d (phycore %d) on node %d\n", i, core_id, phycore_id, node_id);
   }  
   last_used_node_ += 1;
 }

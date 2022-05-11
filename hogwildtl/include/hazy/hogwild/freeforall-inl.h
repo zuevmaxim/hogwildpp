@@ -187,7 +187,7 @@ void FreeForAll(HogwildTask_t &task, hazy::thread::ThreadPool &tpool,
                 double (*hook)(HogwildTask_t&, unsigned, unsigned),
                 vector::FVector<double> &result) {
   if (result.size < tpool.ThreadCount()) {
-    printf("#threads = %u, size = %lu\n", tpool.ThreadCount(), result.size);
+    printf("#threads = %u, size = %llu\n", tpool.ThreadCount(), result.size);
   }
   assert(result.size >= tpool.ThreadCount());
 

@@ -18,7 +18,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <set>
-#include <numa.h>
+#include "../hogwildtl/include/numa.h"
 
 #include "hazy/hogwild/hogwild-inl.h"
 #include "hazy/hogwild/numa_memory_scan.h"
@@ -27,9 +27,10 @@
 
 #include "frontend_util.h"
 
-#include "numasvm/svmmodel.h"
+#include "mysvm/svmmodel.h"
 #include "svm/svm_loader.h"
-#include "numasvm/svm_exec.h"
+#include "mysvm/svm_exec.h"
+#include "../hazytl/include/hazy/thread/thread_pool.h"
 
 
 // Hazy imports
@@ -87,35 +88,13 @@ size_t NumaLoadSVMExamples(Scan &scan, vector::FVector<SVMExample> * nodeex, uns
   return nfeats;
 }
 
-fp_type SolveBeta(int n) {
-  fp_type start = 0.6;
-  fp_type end = 1.0;
-  fp_type mid = 0.5;
-  fp_type err = 0;
-  if (n >= 2) {
-    do {
-      mid = (start + end) / 2;
-      err = pow(mid, n) + mid - 1;
-      if (err > 0) {
-	end = mid; 
-      }
-      else {
-	start = mid;
-      }
-    } while(fabs(err) > 0.001);
-  }
-  if (!n)
-    mid = .0; 
-  return mid;
-}
 
 /* this function creates models in a ring manner and groups cluster_size threads into a cluster, which shares a single model.
    the cluster_size variable is the "c" in HogWild++ paper.
 */
-int CreateNumaClusterRoundRobinRingSVMModel(NumaSVMModel * &node_m, size_t nfeats, hazy::thread::ThreadPool &tpool, unsigned nthreads, unsigned cluster_size, int update_delay) {
+int CreateNumaClusterRoundRobinRingSVMModel(MyNumaSVMModel * &node_m, size_t nfeats, hazy::thread::ThreadPool &tpool, unsigned nthreads, unsigned cluster_size, int update_delay) {
   /* determine which w to access for each thread */
   int * thread_to_weights_mapping = new int[nthreads];
-  int * next_weights = new int[nthreads];
   unsigned phycpu_count = tpool.PhyCPUCount();
   int weights_count = nthreads > phycpu_count ? phycpu_count : nthreads;
   int cluster_count = weights_count / cluster_size;
@@ -126,34 +105,15 @@ int CreateNumaClusterRoundRobinRingSVMModel(NumaSVMModel * &node_m, size_t nfeat
   /* Build the weight update chain */
   for (unsigned i = 0; i < nthreads; ++i) {
     thread_to_weights_mapping[i] = ((i % phycpu_count) % cluster_size) * cluster_count + ((i % phycpu_count) / cluster_size);
+//    printf("Thread %d is mapped to model %d\n", i, thread_to_weights_mapping[i]);
   }
-  /* next-weight policy:
-     Threads in a cluster take turns communicating with adjacent node
-     for example, if we have 8 threads and 2 clusters, the order is 0, 4, 1, 5, 2, 6, 3, 7
-     We assume that first N threads will be allocated to physical cores. (N = #physical cores)
-     Threads allocated to hyperthreading cores will not be responding for synchronization.
-  */
-  for (unsigned i = 0; i < nthreads; ++i) {
-    if (i < phycpu_count) {
-      next_weights[i] = (thread_to_weights_mapping[i] + 1) % weights_count;
-    }
-    else {
-      next_weights[i] = -1;
-    }
-  }
-  if (cluster_count == 1) {
-    for (unsigned i = 0; i < nthreads; ++i) {
-      next_weights[i] = -1;
-    }
-  }
+
 
  /* Now create the Model array: per-cluster, ring 
   */
   numa_run_on_node(0);
   numa_set_preferred(0);
-  int * atomic_ptr = new int ();
-  int atomic_mask = (1 << (sizeof(int) * 8 - (weights_count - 1 ? __builtin_clz(weights_count - 1) : 32))) - 1;
-  node_m = new NumaSVMModel[weights_count]; // some of them are just pointers to other weights
+  node_m = new MyNumaSVMModel[weights_count]; // some of them are just pointers to other weights
 //  printf("Model array allocated at %p\n", node_m);
 //  PrintNumaMemStats();
   for (int i = 0; i < weights_count; ++i) {
@@ -162,53 +122,35 @@ int CreateNumaClusterRoundRobinRingSVMModel(NumaSVMModel * &node_m, size_t nfeat
     numa_run_on_node(node);
     numa_set_preferred(node);
     if (i / cluster_count == 0) {
-      // only allocate memory for the first thread in each cluster
-//      printf("Allocating memory for weight %d (thread %d) on node %d\n", i, thread_id, node);
       node_m[i].AllocateModel(nfeats);
-//      PrintNumaMemStats();
+      *node_m[i].owner = i;
+      node_m[i].peers.size = cluster_count - 1;
+      node_m[i].peers.values = new int[cluster_count - 1];
+      int k = 0;
+      for (int j = 0; j < cluster_count; ++j) {
+        if (i == j) continue;
+        node_m[i].peers.values[k++] = j;
+      }
     }
     else {
       // this thread shares the model
       node_m[i].MirrorModel(node_m[i % cluster_count]);
     }
-    // now initializes the token (atomic counter)
-    node_m[i].atomic_ptr = atomic_ptr;
-    node_m[i].atomic_mask = atomic_mask;
-    // each thread will increase the counter by atomic_inc_value
-    if (i == weights_count - 1) {
-      // the last cluster is special, need to return the counter to 0
-      node_m[i].atomic_inc_value = atomic_mask - weights_count + 2;
-    }
-    else {
-      // other cluster will just increase the counter by 1
-      node_m[i].atomic_inc_value = 1;
-    }
+    node_m[i].id = i;
+    node_m[i].next_id = (i + cluster_count) % weights_count;
     node_m[i].thread_to_weights_mapping = thread_to_weights_mapping;
-    node_m[i].next_weights = next_weights;
-    node_m[i].update_atomic_counter = update_delay * 8; // give the first update a little bit longer time;
+    node_m[i].update_atomic_counter = update_delay;
+
+//    printf("Model %d runs on thread %d. Owner is %d, next is %d \n", node_m[i].id, thread_id, *node_m[i].owner, node_m[i].next_id);
+//    printf("Peers (%d) are : ", node_m[i].peers.size);
+//    for (int j = 0; j < node_m[i].peers.size; ++j) {
+//      printf("%d ", node_m[i].peers.values[j]);
+//    }
+//    printf("\n");
   }
   numa_run_on_node(-1);
   numa_set_localalloc();
   return weights_count;
-}
-
-void PrintWeights(NumaSVMModel * node_m, int weights_count, int nthreads, hazy::thread::ThreadPool &tpool) {
-  printf("Thread to weights map:\n");
-  NumaSVMModel &model = node_m[0];
-  for (int i = 0; i < nthreads; ++i) {
-    int weights_index = model.thread_to_weights_mapping[i];
-    int next_weights = model.next_weights[i];
-    NumaSVMModel * const m = &node_m[weights_index];
-    NumaSVMModel * const next_m = next_weights >= 0 ? &node_m[next_weights] : NULL;
-    int atomic_inc_value = m->atomic_inc_value;
-    int atomic_mask = m->atomic_mask;
-    printf("Thread %2d (node %2d phycore %2d core %2d): "
-	   "%2d->%2d at %p->%p, (atomic+%2d) & %2x\n", 
-	   i, tpool.GetThreadNodeAffinity(i), tpool.GetThreadPhyCoreAffinity(i), 
-           tpool.GetThreadCoreAffinity(i), weights_index, next_weights,
-           m->weights.values, next_weights >= 0 ? next_m->weights.values: NULL,
-           atomic_inc_value, atomic_mask);
-  }
 }
 
 int main(int argc, char** argv) {
@@ -345,17 +287,13 @@ int main(int argc, char** argv) {
   CountDegrees(node_train_examps[0], degs);
 
   for (int iteration = 0; iteration < 100; ++iteration) {
-    NumaSVMModel* node_m;
+    MyNumaSVMModel* node_m;
     int weights_count;
-    fp_type beta, lambda;
+    fp_type beta = 0.0, lambda = 0.5;
     if (cluster_size <= 0) {
         cluster_size = tpool.PhyCPUCount() / tpool.NodeCount();
     }
     weights_count = CreateNumaClusterRoundRobinRingSVMModel(node_m, nfeats, tpool, nthreads, cluster_size,update_delay);
-    beta = SolveBeta(weights_count / cluster_size);
-    lambda = 1 - pow(beta, weights_count / cluster_size - 1);
-
-    printf("weights_count=%d, beta=%f, lambda=%f\n", weights_count, beta, lambda);
 //    PrintWeights(node_m, weights_count, nthreads, tpool);
     SVMParams tp(step_size, step_decay, mu, beta, lambda, weights_count, true, update_delay, tolerance, &tpool);
     tp.degrees = degs;
@@ -363,9 +301,10 @@ int main(int argc, char** argv) {
 
 //  hogwild::freeforall::FeedTrainTest(memfeed.GetTrough(), nepochs, nthreads);
     NumaMemoryScan<SVMExample> mscan(node_train_examps, nnodes);
-    Hogwild<NumaSVMModel, SVMParams, NumaSVMExec> hw(node_m[0], tp, tpool);
+    Hogwild<MyNumaSVMModel, SVMParams, MyNumaSVMExec> hw(node_m[0], tp, tpool);
     NumaMemoryScan<SVMExample> tscan(node_test_examps, nnodes);
     printf("Run experiment: threads=%d c=%d\n", nthreads, cluster_size);
+    fflush(stdout);
     hw.RunExperiment(nepochs, wall_clock, mscan, tscan, target_accuracy);
   }
   return 0;

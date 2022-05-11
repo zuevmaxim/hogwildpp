@@ -54,7 +54,7 @@ stepdecay_per_dataset = { "covtype" : [0.85],
 iterations = {	"default" : 50, "epsilon" : 25}
 step_search_range = 0
 
-outputdir = "numasvm_" + time.strftime("%m%d-%H%M%S")
+outputdir = "mysvm_" + time.strftime("%m%d-%H%M%S")
 
 if len(sys.argv) > 1:
 	if sys.argv[1] == "-n":
@@ -94,7 +94,7 @@ for d in datasets:
 				effective_epochs = epochs * nweights
 				effective_epochs = min(1000, effective_epochs)
 				effective_epochs = max(150, effective_epochs)
-				u = GenerateUpdateDelay(nweights)
+				u = GenerateUpdateDelay(nweights) * 8
 				if d in stepdecay_per_dataset:
 					stepdecay_trials = stepdecay_per_dataset[d]
 				else:
@@ -102,7 +102,7 @@ for d in datasets:
 				for b in stepdecay_trials:
 					effective_b = math.pow(b, (1.0 / nweights))
 					result_name = os.path.join(outputdir, "{}_{}_{}_{}_{}.txt".format(d, n, c, s, b))
-					cmdline = "bin/numasvm --epoch {} --stepinitial {} --step_decay {} --update_delay {} --cluster_size {} --split {}  --target_accuracy {} data/{}_train.tsv data/{}_test.tsv | tee {}".format(effective_epochs, s, effective_b, u, c, n, target_accuracy[d], d, d, result_name)
+					cmdline = "bin/mysvm --epoch {} --stepinitial {} --step_decay {} --update_delay {} --cluster_size {} --split {}  --target_accuracy {} data/{}_train.tsv data/{}_test.tsv | tee {}".format(effective_epochs, s, effective_b, u, c, n, target_accuracy[d], d, d, result_name)
 					print("Executing HogWild++ with {} threads, c={}:\n{}\nResults at {}".format(n, c, cmdline, result_name))
 					if not dryrun:
 						subprocess.Popen(cmdline, shell=True).wait()

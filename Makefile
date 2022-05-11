@@ -15,7 +15,7 @@ ifneq ($(UNAME), Darwin)
 	LIB_RT=-lrt
 endif
 
-ALL= $(TOOLS) obj/frontend.o bin/svm bin/numasvm
+ALL= $(TOOLS) obj/frontend.o bin/svm bin/numasvm bin/mysvm
 
 all: $(ALL)
 
@@ -28,6 +28,10 @@ bin/svm: obj/frontend.o
 
 bin/numasvm: obj/frontend.o
 	$(CPP) -o bin/numasvm src/numasvm_main.cc -I$(HOG_INCL) -I$(HTL_INCL) $(LIBS) $(LIB_RT) \
+		obj/frontend.o
+
+bin/mysvm: obj/frontend.o
+	$(CPP) -o bin/mysvm src/mynumasvm_main.cc -I$(HOG_INCL) -I$(HTL_INCL) $(LIBS) $(LIB_RT) \
 		obj/frontend.o
 
 bin/bbsvm: obj/frontend.o

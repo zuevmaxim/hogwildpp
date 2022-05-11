@@ -65,7 +65,7 @@ struct NumaSVMModel {
     weights.values = new fp_type[dim];
     old_weights.size = dim;
     old_weights.values = new fp_type[dim];
-    printf("Allocated w at %p\n", weights.values);
+//    printf("Allocated w at %p\n", weights.values);
     for (unsigned i = dim; i-- > 0; ) {
       weights.values[i] = 0;
       old_weights.values[i] = 0;

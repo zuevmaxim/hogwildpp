@@ -98,8 +98,8 @@ bool Hogwild<Model, Params, Exec>::RunExperiment(
     TrainScan &trscan, TestScan &tescan, double target_accuracy) {
   printf("wall_clock: %.5f    Going Hogwild!\n", wall_clock.Read());
   bool stop = false;
-  double time_s{};
-  int epoch{};
+  double time_s = 0.0;
+  int epoch = 0;
   for (int e = 1; e <= nepochs; e++) {
     UpdateModel(trscan);
     double train_rmse = ComputeRMSE(trscan);
