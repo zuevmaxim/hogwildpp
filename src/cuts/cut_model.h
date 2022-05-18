@@ -63,7 +63,7 @@ class CutModel {
         c++;
       }
     }
-    printf("Counted: %llu\n", static_cast<long long unsigned>(c));
+    printf("Counted: %lu\n", static_cast<long long unsigned>(c));
     printf("Sum of weights: %f\n", t);
   }
 

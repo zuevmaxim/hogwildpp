@@ -27,6 +27,7 @@
 #include "svm/svmmodel.h"
 #include "svm/svm_loader.h"
 #include "svm/svm_exec.h"
+#include "consts.h"
 
 
 // Hazy imports
@@ -156,7 +157,7 @@ int main(int argc, char** argv) {
   CountDegrees(train_examps, degs);
 
 //  hogwild::freeforall::FeedTrainTest(memfeed.GetTrough(), nepochs, nthreads);
-  for (int i = 0; i < 100; ++i) {
+  for (int i = 0; i < ITERATIONS; ++i) {
     SVMParams tp (step_size, step_decay, mu);
     tp.degrees = degs;
     tp.ndim = nfeats;

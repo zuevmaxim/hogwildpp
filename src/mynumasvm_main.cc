@@ -18,7 +18,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <set>
-#include "../hogwildtl/include/numa.h"
+#include <numa.h>
 
 #include "hazy/hogwild/hogwild-inl.h"
 #include "hazy/hogwild/numa_memory_scan.h"
@@ -31,6 +31,7 @@
 #include "svm/svm_loader.h"
 #include "mysvm/svm_exec.h"
 #include "../hazytl/include/hazy/thread/thread_pool.h"
+#include "consts.h"
 
 
 // Hazy imports
@@ -286,7 +287,7 @@ int main(int argc, char** argv) {
   }
   CountDegrees(node_train_examps[0], degs);
 
-  for (int iteration = 0; iteration < 100; ++iteration) {
+  for (int iteration = 0; iteration < ITERATIONS; ++iteration) {
     MyNumaSVMModel* node_m;
     int weights_count;
     fp_type beta = 0.0, lambda = 0.5;

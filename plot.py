@@ -1,57 +1,23 @@
 import re
+import sys
 from os import listdir
 from os.path import isfile, join
-import sys
-import seaborn as sns
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 
-dpi = 300
+from common import extract_time, extract_epoch_time, datasets
+
 nthreads = [1, 2, 4, 8, 16, 32, 48, 64]
-datasets = [
-    # "covtype",
-    "webspam",
-    # "music",
-    "rcv1",
-    "epsilon",
-    "news20"
-]
-
-
-def extract_epoch_time(f):
-    with open(f, "r") as file:
-        times = []
-        epochs = []
-        for line in file:
-            l = line.strip()
-            res = re.search(r'epoch_time: ([\d.]+)', l)
-            if res:
-                times.append(float(res.group(1)))
-        times = times
-        return np.array(times), np.array(epochs)
-
-
-def extract_time(f):
-    with open(f, "r") as file:
-        times = []
-        epochs = []
-        for line in file:
-            l = line.strip()
-            res = re.search(r'epoch: (\d+) train_time: ([\d.]+)', l)
-            if res:
-                epochs.append(float(res.group(1)))
-                times.append(float(res.group(2)))
-        times = times
-        epochs = epochs
-        print(f, len(times))
-        return np.array(times), np.array(epochs)
-
 
 path = sys.argv[1]
 numapath = sys.argv[2]
+updatedpath = sys.argv[3]
 files = [f for f in listdir(path) if isfile(join(path, f))]
 numafiles = [f for f in listdir(numapath) if isfile(join(numapath, f))]
+updatedfiles = [f for f in listdir(updatedpath) if isfile(join(updatedpath, f))]
 sns.set(style='whitegrid')
 
 
@@ -122,6 +88,18 @@ for dataset in datasets:
                 types[name] = {}
             times, epochs = extract_time(join(numapath, f))
             iteration_times, _ = extract_epoch_time(join(numapath, f))
+            types[name][threads] = times, epochs, iteration_times
+
+    for f in updatedfiles:
+        res = re.search(r'%s_(\d+)_(\d+)_[\d.]+_[\d.]+.txt' % dataset, f)
+        if res:
+            threads = int(res.group(1))
+            c = int(res.group(2))
+            name = "hogwild++%2d patch" % c
+            if name not in types:
+                types[name] = {}
+            times, epochs = extract_time(join(updatedpath, f))
+            iteration_times, _ = extract_epoch_time(join(updatedpath, f))
             types[name][threads] = times, epochs, iteration_times
 
     plot_count(types, dataset)

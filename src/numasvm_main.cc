@@ -30,6 +30,7 @@
 #include "numasvm/svmmodel.h"
 #include "svm/svm_loader.h"
 #include "numasvm/svm_exec.h"
+#include "consts.h"
 
 
 // Hazy imports
@@ -344,7 +345,7 @@ int main(int argc, char** argv) {
   }
   CountDegrees(node_train_examps[0], degs);
 
-  for (int iteration = 0; iteration < 100; ++iteration) {
+  for (int iteration = 0; iteration < ITERATIONS; ++iteration) {
     NumaSVMModel* node_m;
     int weights_count;
     fp_type beta, lambda;
@@ -356,7 +357,7 @@ int main(int argc, char** argv) {
     lambda = 1 - pow(beta, weights_count / cluster_size - 1);
 
     printf("weights_count=%d, beta=%f, lambda=%f\n", weights_count, beta, lambda);
-//    PrintWeights(node_m, weights_count, nthreads, tpool);
+    PrintWeights(node_m, weights_count, nthreads, tpool);
     SVMParams tp(step_size, step_decay, mu, beta, lambda, weights_count, true, update_delay, tolerance, &tpool);
     tp.degrees = degs;
     tp.ndim = nfeats;
