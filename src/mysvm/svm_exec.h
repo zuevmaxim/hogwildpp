@@ -106,7 +106,7 @@ int inline ComputeAccuracy(const SVMExample& e, const MyNumaSVMModel& model) {
   return !!std::max(dot * e.value, static_cast<fp_type>(0.0));
 }
 
-  void PerformAveraging(const SVMParams& params, MyNumaSVMModel* model, MyNumaSVMModel* next_model) {
+  void PerformAveraging(MyNumaSVMModel* model, MyNumaSVMModel* next_model) {
     vector::FVector <fp_type>& w = model->weights;
     fp_type* const vals = w.values;
     fp_type* const next_vals = next_model->weights.values;
@@ -120,28 +120,21 @@ int inline ComputeAccuracy(const SVMExample& e, const MyNumaSVMModel& model) {
     }
   }
 
-bool NeedSync(MyNumaSVMModel* model) {
-  if (!model->TryLock()) return false;
-  if (model->HasSynced()) {
-    model->SetSynced(false);
-    model->SetNextOwner();
-    model->Unlock();
-    return false;
-  }
-  return true;
-}
 
-bool CheckSync(MyNumaSVMModel* model, MyNumaSVMModel* next_model, const SVMParams& params) {
+bool CheckSync(MyNumaSVMModel* model, MyNumaSVMModel* next_model) {
   MyNumaSVMModel *a = model, *b = next_model;
   if (a > b) std::swap(a, b);
-  if (!NeedSync(a)) return false;
-  if (!NeedSync(b)) {
+  if (!a->TryLock()) return false;
+  if (!b->TryLock()) {
     a->Unlock();
     return false;
   }
-  PerformAveraging(params, model, next_model);
-  model->SetNextOwner();
-  next_model->SetSynced(true);
+  if (model->HasSynced()) {
+      model->SetSynced(false);
+  } else {
+      PerformAveraging(model, next_model);
+      next_model->SetSynced(true);
+  }
   b->Unlock();
   a->Unlock();
   return true;
@@ -149,7 +142,8 @@ bool CheckSync(MyNumaSVMModel* model, MyNumaSVMModel* next_model, const SVMParam
 
 /* this is the core function, for updating the model */
 int inline ModelUpdate(const SVMExample& examp, const SVMParams& params,
-                       MyNumaSVMModel* model, MyNumaSVMModel* models, int tid, int weights_index, int iter, int& update_atomic_counter) {
+                       MyNumaSVMModel* model, MyNumaSVMModel* models, int tid, int weights_index, int iter, int& update_atomic_counter,
+                       bool can_sync) {
   int sync_counter = 0;
   vector::FVector <fp_type>& w = model->weights;
 
@@ -173,14 +167,16 @@ int inline ModelUpdate(const SVMExample& examp, const SVMParams& params,
     vals[j] *= (1 - scalar / deg);
   }
 
-  if (update_atomic_counter < 0) {
-    int peer = model->RandomPeer();
-    MyNumaSVMModel* next_model = peer >= 0 ? &models[peer] : NULL;
-    if (next_model && model->IsOwner() && CheckSync(model, next_model, params)) {
-      update_atomic_counter = params.update_delay;
-    }
+  if (can_sync) {
+      if (update_atomic_counter < 0 && model->IsOwner()) {
+          int peer = model->RandomPeer();
+          MyNumaSVMModel* next_model = &models[peer];
+          CheckSync(model, next_model);
+          model->SetNextOwner();
+          update_atomic_counter = params.update_delay * model->cluster_size;
+      }
+      update_atomic_counter--;
   }
-  update_atomic_counter--;
   return sync_counter;
 }
 
@@ -216,13 +212,12 @@ double MyNumaSVMExec::UpdateModel(MySVMTask& task, unsigned tid, unsigned total)
   // individually update the model for each example
   int weights_index = model.thread_to_weights_mapping[tid];
   MyNumaSVMModel* const m = &task.model[weights_index];
-  int peer = m->RandomPeer();
-  MyNumaSVMModel* const next_m = peer < 0 ? NULL : &task.model[peer];
   int update_atomic_counter = m->update_atomic_counter;
   int sync_counter = 0;
+  bool canSync = m->RandomPeer() != -1;
   for (unsigned i = start; i < end; i++) {
     size_t indirect = perm[i];
-    sync_counter += ModelUpdate(examps[indirect], params, m, next_m, tid, weights_index, i - start, update_atomic_counter);
+    sync_counter += ModelUpdate(examps[indirect], params, m, task.model, tid, weights_index, i - start, update_atomic_counter, canSync);
   }
   // Save states
   m->update_atomic_counter = update_atomic_counter;
@@ -233,7 +228,19 @@ double MyNumaSVMExec::UpdateModel(MySVMTask& task, unsigned tid, unsigned total)
 }
 
 int MyNumaSVMExec::GetLatestModel(MySVMTask& task, unsigned tid, unsigned total) {
-  return 0;
+    MyNumaSVMModel* models = task.model;
+    SVMParams& params = task.params;
+    int max_value = 0;
+    int max_index = 0;
+    for (int i = 0; i < params.weights_count; ++i) {
+        MyNumaSVMModel& model = models[i];
+        if (model.HasSynced()) return i;
+        if (model.update_atomic_counter > max_value) {
+            max_value = model.update_atomic_counter;
+            max_index = i;
+        }
+    }
+    return max_index;
 }
 
 double MyNumaSVMExec::TestModel(MySVMTask& task, unsigned tid, unsigned total) {

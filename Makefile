@@ -69,3 +69,36 @@ bin/unconvert: src/tools/unconvert.cc
 
 clean:
 	rm -f $(ALL)
+
+datasets: data/news20_train.tsv data/rcv1_train.tsv data/rcv1_test.tsv data/epsilon_test.tsv data/epsilon_train.tsv data/webspam_train.tsv
+
+data/rcv1_test.tsv:
+	wget https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/rcv1_train.binary.bz2
+	bunzip2 rcv1_train.binary.bz2
+	python3 convert2hogwild.py rcv1_train.binary data/rcv1_test.tsv && rm rcv1_train.binary
+
+data/rcv1_train.tsv:
+	wget https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/rcv1_test.binary.bz2
+	bunzip2 rcv1_test.binary.bz2
+	python3 convert2hogwild.py rcv1_test.binary data/rcv1_train.tsv && rm rcv1_test.binary
+
+data/news20_train.tsv:
+	wget https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/news20.binary.bz2
+	bunzip2 news20.binary.bz2
+	python3 convert2hogwild.py news20.binary data/news20 --split && rm news20.binary
+
+data/epsilon_test.tsv:
+	wget https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/epsilon_normalized.t.xz
+	unxz epsilon_normalized.t.xz
+	python3 convert2hogwild.py epsilon_normalized.t data/epsilon_test.tsv && rm epsilon_normalized.t
+
+data/epsilon_train.tsv:
+	wget https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/epsilon_normalized.xz
+	unxz epsilon_normalized.xz
+	python3 convert2hogwild.py epsilon_normalized data/epsilon_train.tsv && rm epsilon_normalized
+
+data/webspam_train.tsv:
+	wget https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/webspam_wc_normalized_trigram.svm.xz
+	unxz webspam_wc_normalized_trigram.svm.xz
+	python3 convert2hogwild.py webspam_wc_normalized_trigram.svm data/webspam --split && rm webspam_wc_normalized_trigram.svm
+

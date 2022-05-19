@@ -22,7 +22,7 @@ def generate_update_delays(nweights):
 nthreads = [128]
 cluster_size = [32]
 iterations = {"default": 50, "epsilon": 25}
-outputdir = "mysvm_" + time.strftime("%m%d-%H%M%S")
+outputdir = "results/mysvm_" + time.strftime("%m%d-%H%M%S")
 
 if not is_dry_run():
     check_call("mkdir -p {}/".format(outputdir), shell=True)

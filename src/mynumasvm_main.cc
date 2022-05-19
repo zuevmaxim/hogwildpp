@@ -138,9 +138,10 @@ int CreateNumaClusterRoundRobinRingSVMModel(MyNumaSVMModel * &node_m, size_t nfe
       node_m[i].MirrorModel(node_m[i % cluster_count]);
     }
     node_m[i].id = i;
+    node_m[i].cluster_size = cluster_size;
     node_m[i].next_id = (i + cluster_count) % weights_count;
     node_m[i].thread_to_weights_mapping = thread_to_weights_mapping;
-    node_m[i].update_atomic_counter = update_delay;
+    node_m[i].update_atomic_counter = update_delay * cluster_size;
 
 //    printf("Model %d runs on thread %d. Owner is %d, next is %d \n", node_m[i].id, thread_id, *node_m[i].owner, node_m[i].next_id);
 //    printf("Peers (%d) are : ", node_m[i].peers.size);

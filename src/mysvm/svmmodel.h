@@ -48,15 +48,9 @@ struct MyNumaSVMModel {
   vector::FVector<int> peers;
   int update_atomic_counter;
   int * thread_to_weights_mapping;
+  int cluster_size;
 
-
-  //! Construct a weight vector of length dim backed by the buffer
-  /*! A new model backed by the buffer.
-   * \param buf the backing memory for the weight vector
-   * \param dim the length of buf
-   */
   explicit MyNumaSVMModel() {
-    update_atomic_counter = -1;
   }
 
   void AllocateModel(unsigned dim) {
