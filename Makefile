@@ -70,7 +70,7 @@ bin/unconvert: src/tools/unconvert.cc
 clean:
 	rm -f $(ALL)
 
-datasets: data/news20_train.tsv data/rcv1_train.tsv data/rcv1_test.tsv data/epsilon_test.tsv data/epsilon_train.tsv data/webspam_train.tsv
+datasets: data/news20_train.tsv data/rcv1_train.tsv data/rcv1_test.tsv # data/epsilon_test.tsv data/epsilon_train.tsv data/webspam_train.tsv
 
 data/rcv1_test.tsv:
 	wget https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/rcv1_train.binary.bz2
