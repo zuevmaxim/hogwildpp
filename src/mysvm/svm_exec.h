@@ -229,10 +229,10 @@ double MyNumaSVMExec::UpdateModel(MySVMTask& task, unsigned tid, unsigned total)
 
 int MyNumaSVMExec::GetLatestModel(MySVMTask& task, unsigned tid, unsigned total) {
     MyNumaSVMModel* models = task.model;
-    SVMParams& params = task.params;
+    SVMParams* params = task.params;
     int max_value = 0;
     int max_index = 0;
-    for (int i = 0; i < params.weights_count; ++i) {
+    for (int i = 0; i < params->weights_count; ++i) {
         MyNumaSVMModel& model = models[i];
         if (model.HasSynced()) return i;
         if (model.update_atomic_counter > max_value) {
