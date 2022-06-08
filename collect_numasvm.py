@@ -5,22 +5,8 @@ import subprocess
 import time
 from subprocess import check_call
 
-from common import datasets, maxstepsize, target_accuracy, get_epochs, is_dry_run, \
-    create_step_decay_trials
+from common import *
 
-
-def generate_update_delays(nweights):
-    if nweights <= 4:
-        update_delay = 64
-    elif nweights <= 10:
-        update_delay = 16
-    else:
-        update_delay = 4
-    return [update_delay * (2 ** i) for i in range(-3, 4)]
-
-
-nthreads = [128]
-cluster_size = [32]
 iterations = {"default": 50, "epsilon": 25}
 outputdir = "results/numasvm_" + time.strftime("%m%d-%H%M%S")
 

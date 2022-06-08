@@ -5,9 +5,8 @@ import subprocess
 import time
 from subprocess import check_call
 
-from common import datasets, is_dry_run, get_epochs, maxstepsize, create_step_decay_trials, target_accuracy
+from common import *
 
-nthreads = [128]
 iterations = {"default": 150, "epsilon": 75}
 outputdir = "results/svm_" + time.strftime("%m%d-%H%M%S")
 

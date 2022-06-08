@@ -1,7 +1,6 @@
+import numpy as np
 import re
 import sys
-
-import numpy as np
 
 stepdecay_trials_length = 10
 
@@ -39,6 +38,20 @@ stepdecay_per_dataset = {
 }
 
 
+def generate_update_delays(nweights):
+    if nweights <= 4:
+        update_delay = 64
+    elif nweights <= 10:
+        update_delay = 16
+    else:
+        update_delay = 4
+    return [update_delay * (2 ** i) for i in [-3, -1, 0, 1, 3]]
+
+
+nthreads = [1, 2]
+cluster_size = [4, 8, 16, 32]
+
+
 def get_epochs(d, iterations):
     if d in iterations:
         return iterations[d]
@@ -60,7 +73,8 @@ def create_step_decay_trials(d, n):
     stepdecay = get_step_decay(d)
     if n == 1:
         return [stepdecay]
-    return [stepdecay ** ((i + 1) / stepdecay_trials_length) for i in range(0, stepdecay_trials_length * 2)]
+    return [stepdecay]
+    # return [stepdecay ** ((i + 1) / stepdecay_trials_length) for i in range(0, stepdecay_trials_length * 2, 2)]
 
 
 def get_step_decay(d):
@@ -71,6 +85,7 @@ def get_step_decay(d):
 
 
 dpi = 300
+
 
 def extract_time(f):
     with open(f, "r") as file:
