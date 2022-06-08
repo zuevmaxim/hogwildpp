@@ -19,6 +19,7 @@
 #include "hazy/vector/dot-inl.h"
 #include "hazy/vector/scale_add-inl.h"
 #include "hazy/hogwild/tools-inl.h"
+#include "hazy/util/clock.h"
 
 namespace hazy {
 namespace hogwild {
@@ -70,7 +71,8 @@ void SVMExec::PostUpdate(SVMModel &model, SVMParams &params) {
 }
 
 double SVMExec::UpdateModel(SVMTask &task, unsigned tid, unsigned total) {
-
+  util::Clock clock;
+  clock.Start();
   SVMModel  &model = *task.model;
 
   SVMParams const &params = *task.params;
@@ -88,7 +90,7 @@ double SVMExec::UpdateModel(SVMTask &task, unsigned tid, unsigned total) {
     size_t indirect = perm[i];
     ModelUpdate(examps[indirect], params, m);
   }
-  return 0.0;
+  return clock.Stop();
 }
 
 double SVMExec::TestModel(SVMTask &task, unsigned tid, unsigned total) {

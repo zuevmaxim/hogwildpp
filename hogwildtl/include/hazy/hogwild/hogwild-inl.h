@@ -30,7 +30,7 @@ namespace hogwild {
 
 template <class Model, class Params, class Exec>
 template <class Scan>
-void Hogwild<Model, Params, Exec>::UpdateModel(Scan &scan) {
+double Hogwild<Model, Params, Exec>::UpdateModel(Scan &scan) {
   scan.Reset();
   Zero();
   // train_time_.Start();
@@ -38,6 +38,11 @@ void Hogwild<Model, Params, Exec>::UpdateModel(Scan &scan) {
   FFAScan(model_, params_, scan, tpool_, Exec::UpdateModel, res_, train_time_, epoch_time_);
   // epoch_time_.Stop();
   // train_time_.Pause();
+  double time = 0;
+  for (unsigned i = 0; i < tpool_.ThreadCount(); i++) {
+      time = std::max(time, res_.values[i]);
+  }
+  return time;
 }
 
 template <class Model, class Params, class Exec>
@@ -101,7 +106,7 @@ bool Hogwild<Model, Params, Exec>::RunExperiment(
   double time_s = 0.0;
   int epoch = 0;
   for (int e = 1; e <= nepochs; e++) {
-    UpdateModel(trscan);
+    double epoch_time = UpdateModel(trscan);
     double train_rmse = ComputeRMSE(trscan);
     double test_rmse = ComputeRMSE(tescan);
     double obj = ComputeObj(trscan);
@@ -115,13 +120,12 @@ bool Hogwild<Model, Params, Exec>::RunExperiment(
            epoch_time_.value, train_rmse, test_rmse);
 */
    
-    printf("epoch: %d wall_clock: %.5f train_time!!!: %.5f test_time: %.5f epoch_time: %.5f train_rmse: %.5g test_rmse: %.5g obj: %.9g train_acc: %.5g test_acc: %.5g\n",
-           e, wall_clock.Read(), train_time_.value, test_time_.value,
-           epoch_time_.value, train_rmse, test_rmse, obj, train_acc, test_acc);
+    printf("epoch: %d wall_clock: %.5f train_time!!!: %.5f epoch_time: %.5f train_rmse: %.5g test_rmse: %.5g obj: %.9g train_acc: %.5g test_acc: %.5g\n",
+           e, wall_clock.Read(), train_time_.value,
+           epoch_time, train_rmse, test_rmse, obj, train_acc, test_acc);
     fflush(stdout);
-
+    time_s += epoch_time;
     if (test_acc >= target_accuracy) {
-      time_s = train_time_.value;
       epoch = e;
       stop = true;
       break;

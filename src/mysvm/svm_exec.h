@@ -25,6 +25,7 @@
 #include "hazy/vector/dot-inl.h"
 #include "hazy/vector/scale_add-inl.h"
 #include "hazy/hogwild/tools-inl.h"
+#include "hazy/util/clock.h"
 
 #include <numa.h>
 #include <sched.h>
@@ -194,7 +195,8 @@ int MyNumaSVMExec::GetNumaNode() {
 }
 
 double MyNumaSVMExec::UpdateModel(MySVMTask& task, unsigned tid, unsigned total) {
-
+  util::Clock clock;
+  clock.Start();
   int node = GetNumaNode();
   // TODO: per core model vector
   MyNumaSVMModel& model = *task.model;
@@ -224,7 +226,7 @@ double MyNumaSVMExec::UpdateModel(MySVMTask& task, unsigned tid, unsigned total)
   // printf("%d: %d\n", tid, update_atomic_counter);
   // printf("UpdateModel: thread %d, %d/%lu elements copied.\n", tid, sync_counter, model.weights.size);
 
-  return 0.0;
+  return clock.Stop();
 }
 
 int MyNumaSVMExec::GetLatestModel(MySVMTask& task, unsigned tid, unsigned total) {

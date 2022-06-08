@@ -48,7 +48,7 @@ class Hogwild {
    * Resets the scanner then iterates until the end, updating the model
    */
   template <class Scan>
-  void UpdateModel(Scan &scan);
+  double UpdateModel(Scan &scan);
 
   /*! \brief returns the RMSE of the model using examples form the scanner.
    * \param scan the scanner to use for computing the RMSE
