@@ -23,7 +23,7 @@ size_t LoadSVMExamples(Scan &scan, vector::FVector<SVMExample> &ex) {
     if (lastrow == -1) {
       lastrow = e.row;
     }
-    if ((lastrow != e.row) || (!scan.HasNext())) {
+    if (lastrow != e.row) {
       // finish off the previous vector and start a new one
       lastrow = e.row;
       fp_type *d = new fp_type[data.size()];
@@ -49,6 +49,17 @@ size_t LoadSVMExamples(Scan &scan, vector::FVector<SVMExample> &ex) {
       index.push_back(e.col);
     }
   }
+
+  fp_type* d = new fp_type[data.size()];
+  int* i = new int[data.size()];
+  for (size_t j = 0; j < data.size(); j++) {
+    d[j] = data[j];
+    i[j] = index[j];
+  }
+  SVMExample temp(rating, d, i, data.size());
+  examps.push_back(temp);
+  data.clear();
+  index.clear();
 
   // Copy from temp vector into persistent memory
   ex.size = examps.size();
