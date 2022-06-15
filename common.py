@@ -1,6 +1,7 @@
-import numpy as np
 import re
 import sys
+
+import numpy as np
 
 stepdecay_trials_length = 10
 
@@ -45,11 +46,12 @@ def generate_update_delays(nweights):
         update_delay = 16
     else:
         update_delay = 4
-    return [update_delay * (2 ** i) for i in [-3, -1, 0, 1, 3]]
+    return [update_delay]
+    # return [update_delay * (2 ** i) for i in [-3, -1, 0, 1, 3]]
 
 
-nthreads = [1, 2]
-cluster_size = [4, 8, 16, 32]
+nthreads = [1, 2, 4, 8, 16, 32, 64]
+cluster_size = [16, 32]
 
 
 def get_epochs(d, iterations):
@@ -97,10 +99,33 @@ def extract_time(f):
             if res:
                 epochs.append(float(res.group(1)))
                 times.append(float(res.group(2)))
-        times = times
-        epochs = epochs
-        # print(f, len(times))
         return np.array(times), np.array(epochs)
+
+
+def extract_test_runs(f):
+    with open(f, "r") as file:
+        runs = 0
+        for line in file:
+            if line.strip().startswith("Run experiment:"):
+                runs += 1
+        return runs
+
+
+def extract_accuracy(f):
+    with open(f, "r") as file:
+        train_acc = []
+        test_acc = []
+        prev_line = ""
+        for line in file:
+            l = line.strip()
+            res = re.search(r'epoch: (\d+) train_time: ([\d.]+)', l)
+            if res:
+                res = re.search(r'train_acc: ([\d.]+) test_acc: ([\d.]+)', prev_line)
+                if res:
+                    train_acc.append(float(res.group(1)))
+                    test_acc.append(float(res.group(2)))
+            prev_line = l
+        return np.array(train_acc), np.array(test_acc)
 
 
 def extract_epoch_time(f):
