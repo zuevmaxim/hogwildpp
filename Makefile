@@ -102,3 +102,13 @@ data/webspam_train.tsv:
 	unxz webspam_wc_normalized_trigram.svm.xz
 	python3 convert2hogwild.py webspam_wc_normalized_trigram.svm data/webspam --split && rm webspam_wc_normalized_trigram.svm
 
+data/kdda_train.tsv:
+	wget https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/kdda.bz2
+	bunzip2 kdda.bz2
+	python3 convert2hogwild.py kdda data/kdda_train.tsv && rm kdda
+
+data/kdda_test.tsv:
+	wget https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary/kdda.t.bz2
+	bunzip2 kdda.t.bz2
+	python3 convert2hogwild.py kdda.t data/kdda_test.tsv && rm kdda.t
+

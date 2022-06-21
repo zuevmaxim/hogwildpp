@@ -39,6 +39,9 @@ fp_type inline ComputeLoss(const SVMExample &e, const NumaSVMModel& model);
 //! Container for methods to train and test an SVM
 class NumaSVMExec {
  public:
+
+  static int inline ComputeAccuracy(const SVMExample &e, const NumaSVMModel& model);
+
   /// Preforms updates to the model
   /*! Updates by scanning over examples, uses the thread id and total
    * number of threads to determine which chunk of examples to work on.

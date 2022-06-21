@@ -96,6 +96,34 @@ double Hogwild<Model, Params, Exec>::ComputeAccuracy(Scan &scan) {
   return obj / count;
 }
 
+  template<class Model, class Example, class Scan>
+  void CalcF1Score(const Model& model, int (* hook)(const Example& e, const Model& model), Scan& scan, int& tp, int& tn, int& fp, int& fn) {
+      scan.Reset();
+      while (scan.HasNext()) {
+          ExampleBlock<Example> &ex = scan.Next();
+          vector::FVector<Example> vec = ex.ex;
+          for (int i = 0; i < vec.size; ++i) {
+              bool correct = hook(vec[i], model) == 1;
+              bool positive = vec[i].value > 0;
+              if (correct) {
+                  if (positive) tp++; else tn++;
+              } else {
+                  if (positive) fn++; else fp++;
+              }
+          }
+      }
+  }
+
+  template<class Model, class Params, class Exec>
+  template<class Scan>
+  double Hogwild<Model, Params, Exec>::ComputeF1Score(Scan& scan) {
+      int tp = 0, tn = 0, fp = 0, fn = 0;
+      CalcF1Score(this->model_, Exec::ComputeAccuracy, scan, tp, tn, fp, fn);
+      double precision = double(tp) / (tp + fp);
+      double recall = double(tp) / (tp + fn);
+      return 2 * precision * recall / (precision + recall);
+  }
+
 template <class Model, class Params, class Exec>
 template <class TrainScan, class TestScan>
 bool Hogwild<Model, Params, Exec>::RunExperiment(
@@ -107,11 +135,8 @@ bool Hogwild<Model, Params, Exec>::RunExperiment(
   int epoch = 0;
   for (int e = 1; e <= nepochs; e++) {
     double epoch_time = UpdateModel(trscan);
-    double train_rmse = ComputeRMSE(trscan);
-    double test_rmse = ComputeRMSE(tescan);
-    double obj = ComputeObj(trscan);
-    double train_acc = ComputeAccuracy(trscan);
-    double test_acc = ComputeAccuracy(tescan);
+      double f1_train = ComputeF1Score(tescan);
+      double f1_test = ComputeF1Score(tescan);
     Exec::PostEpoch(model_, params_);
     Exec::PostUpdate(model_, params_);
 /*
@@ -120,12 +145,12 @@ bool Hogwild<Model, Params, Exec>::RunExperiment(
            epoch_time_.value, train_rmse, test_rmse);
 */
    
-    printf("epoch: %d wall_clock: %.5f train_time!!!: %.5f epoch_time: %.5f train_rmse: %.5g test_rmse: %.5g obj: %.9g train_acc: %.5g test_acc: %.5g\n",
+    printf("epoch: %d wall_clock: %.5f train_time!!!: %.5f epoch_time: %.5f train_acc: %.5g test_acc: %.5g\n",
            e, wall_clock.Read(), train_time_.value,
-           epoch_time, train_rmse, test_rmse, obj, train_acc, test_acc);
+           epoch_time, f1_train, f1_test);
     fflush(stdout);
     time_s += epoch_time;
-    if (test_acc >= target_accuracy) {
+    if (f1_test >= target_accuracy) {
       epoch = e;
       stop = true;
       break;

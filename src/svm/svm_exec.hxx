@@ -32,7 +32,7 @@ fp_type inline ComputeLoss(const SVMExample &e, const SVMModel& model) {
   return std::max(1 - dot * e.value, static_cast<fp_type>(0.0));
 }
 
-int inline ComputeAccuracy(const SVMExample &e, const SVMModel& model) {
+int inline SVMExec::ComputeAccuracy(const SVMExample &e, const SVMModel& model) {
   // determine how far off our model is for this example
   vector::FVector<fp_type> const &w = model.weights;
   fp_type dot = vector::Dot(w, e.vector);

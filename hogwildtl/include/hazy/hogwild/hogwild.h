@@ -72,6 +72,9 @@ class Hogwild {
   template <class TrainScan, class TestScan>
   bool RunExperiment(int nepochs, hazy::util::Clock &wall_clock,
                      TrainScan &trscan, TestScan &tescan, double target_accuracy = 1.0);
+
+  template <class Scan>
+  double ComputeF1Score(Scan &scan);
  
   /*! \brief Runs an experiment printing statistics
    * \param nepochs number of epochs to run for

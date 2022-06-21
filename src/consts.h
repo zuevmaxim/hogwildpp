@@ -5,6 +5,6 @@
 #ifndef HOGWILDPP_CONSTS_H
 #define HOGWILDPP_CONSTS_H
 
-const int ITERATIONS = 100;
+const int ITERATIONS = 30;
 
 #endif //HOGWILDPP_CONSTS_H

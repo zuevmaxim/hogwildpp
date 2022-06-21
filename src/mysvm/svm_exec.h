@@ -48,6 +48,8 @@ fp_type inline ComputeLoss(const SVMExample& e, const MyNumaSVMModel& model);
 //! Container for methods to train and test an SVM
 class MyNumaSVMExec {
 public:
+  static int inline ComputeAccuracy(const SVMExample& e, const MyNumaSVMModel& model);
+
   /// Preforms updates to the model
   /*! Updates by scanning over examples, uses the thread id and total
    * number of threads to determine which chunk of examples to work on.
@@ -100,7 +102,7 @@ fp_type inline ComputeLoss(const SVMExample& e, const MyNumaSVMModel& model) {
   return std::max(1 - dot * e.value, static_cast<fp_type>(0.0));
 }
 
-int inline ComputeAccuracy(const SVMExample& e, const MyNumaSVMModel& model) {
+int inline MyNumaSVMExec::ComputeAccuracy(const SVMExample& e, const MyNumaSVMModel& model) {
   // determine how far off our model is for this example
   vector::FVector <fp_type> const& w = model.weights;
   fp_type dot = vector::Dot(w, e.vector);

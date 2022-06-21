@@ -9,9 +9,10 @@ datasets = [
     # "covtype",
     # "webspam",
     # "music",
-    "rcv1",
+    # "rcv1",
     # "epsilon",
-    # "news20"
+    # "news20",
+    "kdda"
 ]
 maxstepsize = {
     "covtype": 5e-03,
@@ -20,6 +21,7 @@ maxstepsize = {
     "rcv1": 5e-01,
     "epsilon": 1e-01,
     "news20": 5e-01,
+    "kdda": 0.02,
 }
 target_accuracy = {
     "covtype": 0.76291,
@@ -27,6 +29,7 @@ target_accuracy = {
     "rcv1": 0.97713,
     "epsilon": 0.89740,
     "news20": 0.96425,
+    "kdda": 0.94240,
 }
 stepdecay_per_dataset = {
     "covtype": 0.85,
@@ -36,6 +39,7 @@ stepdecay_per_dataset = {
     "epsilon": 0.85,
     "news20": 0.8,
     "default": 0.5,
+    "kdda": 0.3,
 }
 
 
